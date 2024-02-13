@@ -8,8 +8,8 @@ import numpy as np
 from scipy.signal import savgol_filter as savitzky_golay
 from scipy.optimize import least_squares as leastsq
 #Local Files
-from vaporfit import atm_subtraction
-from vaporfit import AtmFitParams
+from .vaporfit import atm_subtraction
+from .vaporfit import AtmFitParams
 from typing import Tuple, List
 
 
