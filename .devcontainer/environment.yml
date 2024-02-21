@@ -7,7 +7,6 @@ dependencies:
   - ipykernel
   - jupyterlab-git
   - jupyter
-  - matplotlib
   - pandas
   - numpy
   - scipy
