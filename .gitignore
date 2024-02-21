@@ -154,6 +154,7 @@ cython_debug/
 
 #Data and Outputs
 data/*
+*/data/*
 .DS_Store
 
 
