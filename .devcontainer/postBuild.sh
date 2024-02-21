@@ -3,3 +3,4 @@
 # Install the Bruker Opus Reader
 python3 -m pip install matplotlib brukeropusreader
 python3 -m pip install -e .
+mkdir -p "/workspaces/hydrogenase-ftir/data"
