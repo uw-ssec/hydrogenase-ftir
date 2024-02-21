@@ -2,3 +2,4 @@
 
 # Install the Bruker Opus Reader
 python3 -m pip install brukeropusreader
+python3 -m pip install -e .
