@@ -19,5 +19,4 @@ These files are then imported into Origin as .dpt files to:
 First Step Replicated in [`opus_import.ipynb`](src/opus_import.ipynb), using subtraction algorithm found in [`vaporfit.ipynb`](src/vaporfit.ipynb)
 
 Data Files can be found in [`opus_files`](./opus_files) folder, with plots in the [`output_plots`](./output_plots) folder
-## Current Status: 2/22/24 ##
-Testing git workflow
+
