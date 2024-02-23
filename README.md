@@ -27,3 +27,4 @@ Data Files can be found in [`opus_files`](./opus_files) folder, with plots in th
 - Begin development
 - Commit changes
 - Submit PR
+- Once PR is approved, delete branch
