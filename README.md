@@ -20,3 +20,10 @@ First Step Replicated in [`opus_import.ipynb`](src/opus_import.ipynb), using sub
 
 Data Files can be found in [`opus_files`](./opus_files) folder, with plots in the [`output_plots`](./output_plots) folder
 
+## Current Status: How to Use Codespaces 2/23/24 ##
+- Bring in data to `data` folder
+- Create or edit notebook for work on proof of concept. Create .py for work on function.
+- Click play on Notebook cell, and select `notebook` kernel from Python envs at top of screen
+- Begin development
+- Commit changes
+- Submit PR
