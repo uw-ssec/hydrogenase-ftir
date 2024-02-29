@@ -22,5 +22,11 @@ dynamic = ["dependencies"]
 Homepage = "https://github.com/pypa/sampleproject"
 Issues = "https://github.com/pypa/sampleproject/issues"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+    "pre-commit>=3.6,<4"
+]
+
 [tool.hatch.metadata.hooks.requirements_txt]
 files = ["requirements.txt"]
