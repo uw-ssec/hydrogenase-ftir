@@ -14,7 +14,7 @@ from typing import Tuple, List, SupportsInt, AnyStr
 
 
 #Function to Cut the Range into the desired amount
-
+#Katelyn initial docstrings
 def cut_range_subtraction(raw_spectra:OpusData, raw_wv:OpusData, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3,SG_points:int = 21) -> Tuple[List[AtmFitParams], np.ndarray]:
     #Extracting the wavenumbers from the raw data and water vapor
     raw_spectra_x = raw_spectra.get_range("AB")
