@@ -14,8 +14,27 @@ from typing import Tuple, List, SupportsInt, AnyStr
 
 
 #Function to Cut the Range into the desired amount
-#Katelyn initial docstrings
 def cut_range_subtraction(raw_spectra:OpusData, raw_wv:OpusData, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3,SG_points:int = 21) -> Tuple[List[AtmFitParams], np.ndarray]:
+    """
+    Cuts the specified range from raw spectra data and performs atmospheric subtraction.
+    
+    Args:
+        raw_spectra (OpusData): Raw spectral data (FTIR measurements).
+        raw_wv (OpusData): Raw water vapor data (water vapor absorption spectra).
+        range_start (int, optional): Start wavenumber for the desired range. Defaults to 3997.
+        range_end (int, optional): End wavenumber for the desired range. Defaults to 499.
+        SG_poly (int, optional): Polynomial order for Savitzky-Golay smoothing. Defaults to 3.
+        SG_points (int, optional): Number of points for Savitzky-Golay smoothing. Defaults to 21.
+    Returns:
+        Tuple[List[AtmFitParams], np.ndarray]: Atmospheric subtraction results.
+            -List of atmospheric fitting parameters (e.g. coefficients for water vapor correction.)
+            -NumPy array representing the results of atmospheric subtraction.
+    Notes: 
+        - The function extracts wavenumbers from the raw data and water vapor.
+        - It identifies the specified wavenumber range within the raw spectra.
+        - Savitzky-Golay smoothing is applied to enhance data quality.
+        - The atmospheric subtraction results are returned.
+    """
     #Extracting the wavenumbers from the raw data and water vapor
     raw_spectra_x = raw_spectra.get_range("AB")
     # the "AB" data can contain more null values at the end (at least 1)
