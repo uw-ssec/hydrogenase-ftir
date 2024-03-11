@@ -15,6 +15,19 @@ from typing import Tuple, List
 
 
 def subtract_wv(raw_spectra:OpusData, wv_spectrum:OpusData, show_plots = False) -> Tuple[List[AtmFitParams], np.ndarray]:
+    """
+    Performs water vapor subtraction on raw spectral data.
+    
+    Args:
+        raw_spectra (OpusData): Raw spectral data (FTIR measurements).
+        wv_spectrum (OpusData): Water vapor spectrum data.
+        show_plots (bool, optional): Whether to display intermediate plots. Defaults to false.
+    Returns:
+        np.ndarray: Corrected spectral data after water vapor subtraction.
+    Notes:
+        - The function interpolates raw spectral data and water vapor spectrum to a common grid.
+        - Water vapor spectrum is subtracted from raw spectral data to correct for water vapor absorption.
+    """
     #Printing Contents and Size of Both Water Vapor and Raw Data
     # print(f'Parsed fields: '
     #   f'{list(raw_spectra.keys())}')
