@@ -37,7 +37,7 @@ def flip_order(x):
 
 #This function returns a spline representation of the 2nd deriv of the data passed in and a numpy array with that spline expressed over a range, for passing into find peaks.
 def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots = True):
-     """
+    """
     Computes the second derivative of a specific range of absorbance data from spectroscopic analysis which has water vapor subtracted from it  
 
     Parameters:
