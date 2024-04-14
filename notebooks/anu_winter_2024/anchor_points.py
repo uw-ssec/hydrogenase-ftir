@@ -36,96 +36,49 @@ def get_start_end_anchorpoints(peaks_index, d2ydx2_spl_upsidedown, second_deriv)
 
     width_endIdx = [int(x) for x in peak_wid[2]]
     wv_endIdx =[]
-    #sec_dev_endIdx = []
+
     for i in width_endIdx:
         wv_endIdx.append(second_deriv[2][i])
-        #sec_dev_endIdx.append(x[1][i])
-
 
     width_startIdx = [int(x) for x in peak_wid[3]]
     wv_startIdx = []
-    #sec_dev_startIdx = []
+
     for i in width_startIdx:
         wv_startIdx.append(second_deriv[2][i])
-        #sec_dev_startIdx.append(x[1][i])
-
-    '''anchor_points_from_second_deriv = []
-    for wavenb in wv_startIdx:
-        anchor_points_from_second_deriv.append(wavenb)
-    for wavenb in wv_endIdx:
-        anchor_points_from_second_deriv.append(wavenb)
-
-    anchor_points_from_second_deriv = set(anchor_points_from_second_deriv)'''
-
     return wv_startIdx, wv_endIdx, width_startIdx, width_endIdx
 
 
-def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor = 1):
-    #for loop to compute the left hand side and right hand side peak width for each peak, then put them into a list
-    peak_wid_2_sides = []
-    for i in range(len(deriv_x_peak_val)):
-        left_wid = deriv_x_peak_val[i] - wv_startIdx[i]
-        right_wid = wv_endIdx[i] - deriv_x_peak_val[i]
-        peak_wid_2_sides.append([left_wid, right_wid])
+def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor = 1, show_plot = True):
 
-    #print(peak_wid_2_sides)
-
-    #for loops to decide which anchor point should be included becuase it is far enought away from the peak
+    smaller_peak_wid = get_smaller_peak_width(deriv_x_peak_val, wv_startIdx, wv_endIdx)
     post_process_anchor_points = []
     post_process_anchor_points_abs = []
 
-    peak_correspondence = []
-    anchorpt_peak_correspondence = []
-
-    # Peaking sorting: subtract each anchor point wi the peak and compare which difference is the smallest among the peaks and this one anchor point to figure out which peak this anchor point is close to
     for index in range(len(anchor_points_raw_data)):
-        #print(anchor_points_raw_data[index])
-        peak_to_anchor = []
-        # for every peak
-        for i in range(len(deriv_x_peak_val)):
-            #print('peak',i, 'is', deriv_x_peak_val[i])
-            #peak sorting
-            pa_distance = abs(deriv_x_peak_val[i] - anchor_points_raw_data[index])
-            peak_to_anchor.append(pa_distance)
-        index_of_min = peak_to_anchor.index(min(peak_to_anchor))
-        #print(anchor_points_raw_data[index], 'is closer to peak', index_of_min)
-        peak_correspondence.append(index_of_min)
-    anchorpt_peak_correspondence = [anchor_points_raw_data, peak_correspondence]
+        dist_peak_to_anchor = abs(deriv_x_peak_val-anchor_points_raw_data[index])
+        closest_peak_idx = np.argmin(dist_peak_to_anchor)
 
-            
-    #for loop: 1st: determine is the anchor point on the left or right of the corresponding peak, 2nd compare the difference between the anchor points and the peak against the peak width stored in peak_wid_2_sides to determine if they are far enough away from the peak         
-    for index in range(len(anchor_points_raw_data)):
-            corr_peak_index = anchorpt_peak_correspondence[1]
-            if anchor_points_raw_data[index] < deriv_x_peak_val[corr_peak_index[index]]:
-                #print('on the left of', deriv_x_peak_val[anchorpt_peak_correspondence[1][index]])
-                if deriv_x_peak_val[corr_peak_index[index]] - anchor_points_raw_data[index] > peak_wid_2_sides[corr_peak_index[index]][0]*adj_factor:
-                    #print('include')
-                    post_process_anchor_points.append(anchor_points_raw_data[index])
-                    post_process_anchor_points_abs.append(y_corr_abs[index])
-            else:
-                #print('on the right of', deriv_x_peak_val[i])
-                if anchor_points_raw_data[index] - deriv_x_peak_val[corr_peak_index[index]] > peak_wid_2_sides[corr_peak_index[index]][1]*adj_factor:
-                    #print('include')
-                    post_process_anchor_points.append(anchor_points_raw_data[index])
-                    post_process_anchor_points_abs.append(y_corr_abs[index])
-
+        if abs(deriv_x_peak_val[closest_peak_idx] - anchor_points_raw_data[index]) > smaller_peak_wid[closest_peak_idx]*adj_factor:
+                post_process_anchor_points.append(anchor_points_raw_data[index])
+                post_process_anchor_points_abs.append(y_corr_abs[index])
 
     #post processesing to avoid repeating values and make sure the wavenumbers are in the same acending or decending order
     post_process_anchor_data = pd.DataFrame({'wavenumber': post_process_anchor_points, 'absorbance': post_process_anchor_points_abs})
     post_process_anchor_data = post_process_anchor_data.drop_duplicates()
     anchor_data_sorted = post_process_anchor_data.sort_values(by='wavenumber').reset_index()
-    #print(anchor_data_sorted)
 
-    #get all peak wavenumber and absorbance for plotting
-    peak_wavenumber, peak_absorbance = get_peaks_absorbance(deriv_x_peak_val, anchor_points_raw_data, y_corr_abs)
-    plt.plot(anchor_points_raw_data, y_corr_abs)
-    plt.plot(peak_wavenumber, peak_absorbance,'ro')
-    plt.plot(post_process_anchor_data['wavenumber'], post_process_anchor_data['absorbance'], 'bx')
-    
-    plt.title(plot_title)
-    plt.xlabel("wavenumber")
-    plt.ylabel("Absorbance")
-    plt.plot
+    if show_plot:
+        #get all peak wavenumber and absorbance for plotting
+        peak_wavenumber, peak_absorbance = get_peaks_absorbance(deriv_x_peak_val, anchor_points_raw_data, y_corr_abs)
+        plt.plot(anchor_points_raw_data, y_corr_abs)
+        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
+        plt.plot(post_process_anchor_data['wavenumber'], post_process_anchor_data['absorbance'], 'bx', label = 'anchor_points')
+        
+        plt.title(plot_title)
+        plt.xlabel("wavenumber")
+        plt.ylabel("Absorbance")
+        plt.legend()
+        plt.plot
 
 
 def get_peaks_absorbance(deriv_x_peak_val,x_wavenb, y_corr_abs):
@@ -137,9 +90,18 @@ def get_peaks_absorbance(deriv_x_peak_val,x_wavenb, y_corr_abs):
     wavelengths_within_range = []
     for peak_val in deriv_x_peak_val:
         indices_within_threshold = [index for index, value in enumerate(x_wavenb) if abs(value - peak_val) <= 2]
-        for idx in indices_within_threshold:
-            #peak_wv - one_end = peak_wid
-            #if x_wavenb[idx] <= peak_wid[0] + peak_wv:
-            peak_wavenumber.append(x_wavenb[idx])
-            peak_absorbance.append(y_corr_abs[idx])
+        data = pd.DataFrame({'wv': x_wavenb[indices_within_threshold], 'abs': y_corr_abs[indices_within_threshold]}) 
+        peak_data = data.loc[data['abs'].idxmax()]
+        peak_wavenumber.append(peak_data['wv'])
+        peak_absorbance.append(peak_data['abs'])
     return peak_wavenumber, peak_absorbance
+
+
+def get_smaller_peak_width(deriv_x_peak_val, wv_startIdx, wv_endIdx):
+    smaller_peak_wid = []
+    for i in range(len(deriv_x_peak_val)):
+        left_wid = deriv_x_peak_val[i] - wv_startIdx[i]
+        right_wid = wv_endIdx[i] - deriv_x_peak_val[i]
+        #smaller peak width
+        smaller_peak_wid.append(min(left_wid, right_wid))
+    return smaller_peak_wid
