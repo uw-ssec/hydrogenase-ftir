@@ -79,6 +79,7 @@ def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_point
         plt.ylabel("Absorbance")
         plt.legend()
         plt.plot
+    return anchor_data_sorted
 
 
 def get_peaks_absorbance(deriv_x_peak_val,x_wavenb, y_corr_abs):
