@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 #find peaks
 from scipy.signal import find_peaks, peak_widths
-
+from scipy.interpolate import UnivariateSpline
 
 def get_peaks(d2ydx2_spl_upsidedown, second_deriv, threshold = 0.15, showplot = False):
     relative_height = threshold * max(d2ydx2_spl_upsidedown)
@@ -106,3 +106,14 @@ def get_smaller_peak_width(deriv_x_peak_val, wv_startIdx, wv_endIdx):
         #smaller peak width
         smaller_peak_wid.append(min(left_wid, right_wid))
     return smaller_peak_wid
+
+
+def baseline_spline(anchor_points, degree=3, smooth=0):
+    spline_fit = UnivariateSpline(anchor_points['wavenumber'], anchor_points['absorbance'],k = degree, s=smooth)
+    x_range = np.linspace(int(min(anchor_points['wavenumber'])), int(max(anchor_points['wavenumber'])), 1000)
+    baseline_fit = spline_fit(x_range)
+    baseline_curve = pd.DataFrame({'wavenumber':x_range, 'absorbance': baseline_fit})
+    return baseline_curve
+
+
+
