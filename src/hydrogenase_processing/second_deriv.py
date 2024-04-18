@@ -93,4 +93,50 @@ def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots 
 
 
 
+#This function returns a spline representation of the 2nd deriv of the data passed in and a numpy array with that spline expressed over a range, for passing into find peaks.
+def first_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots = True):
+    """
+    Computes the second derivative of a specific range of absorbance data from spectroscopic analysis which has water vapor subtracted from it  
+
+    Parameters:
+        cut_sub_data (Tuple[List[AtmFitParams], np.ndarray]): A tuple where the first element is a list of AtmFitParams
+            objects, and the second element is an ndarray. The AtmFitParams objects must have 'wavenb' (wavenumbers) 
+            'spectrum' (from which atmospheric contributions will be subtracted ), and atm_spectra (array of atmosphere spectra).
+            np.ndarray: Corrected spectral data after water vapor subtraction.
+        show_plots (bool, optional): If True, the function will plot the original subtracted absorbance data and its
+            second derivative. Defaults to True.
+
+    Returns:
+        tuple: A tuple containing three elements:
+            - d2ydx2_spl: Spline representation of the second derivative of the absorbance data.
+            - spline_over_range : The evaluated spline over the specified range of wavenumbers.
+            - x_range : The range of wavenumbers over which the spline is evaluated.
+
+    Notes:
+    The function extracts the wavenumbers and corresponding absorbance values, calculates their second derivative using
+    numpy's gradient function, and then inverts the data to create a spline representation. It optionally plots the second derivative data for visual inspection.
+    """
+    ## Extracting wavenumbers and y absorbance, and plotting it
+    #wavenumbers
+    x_wavenb = cut_sub_data[0][0].wavenb
+    #absorbance y values
+    y_corr_abs = cut_sub_data[0][0].sub_spectrum
+    
+    ## Taking Second Derivative, using GRADIENT
+    dydx = np.gradient(y_corr_abs, x_wavenb)
+
+    if show_plots:
+        plt.plot(x_wavenb, y_corr_abs)
+        plt.title("Plotting Cut and Subtracted Data")
+        plt.show()
+
+        plt.plot(x_wavenb, dydx)
+        plt.title("Plotting First Derivative Calculated from Gradient")
+        plt.show()
+    return dydx
+
+
+
+
+
 
