@@ -5,8 +5,11 @@ import pandas as pd
 #find peaks
 from scipy.signal import find_peaks, peak_widths
 from scipy.interpolate import UnivariateSpline
+#widget
+import ipywidgets as widgets
 
-def get_peaks(second_deriv, threshold = 0.15, showplot = False):
+
+def get_peaks(second_deriv, threshold, showplot = False):
     """
     Function to detect peaks in the second derivative of a spline function.
 
@@ -43,6 +46,7 @@ def get_peaks(second_deriv, threshold = 0.15, showplot = False):
         plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
         plt.plot(second_deriv[2], second_deriv[1], label = "spline results")
         plt.legend()
+
 
     return peaks_index, deriv_x_peak_val
 
