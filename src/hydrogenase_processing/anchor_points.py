@@ -91,7 +91,7 @@ def get_start_end_anchorpoints(peaks_index, second_deriv):
     return wv_startIdx, wv_endIdx
 
 
-def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor = 1, show_plot = True):
+def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor=1, show_plot = True):
     """
     Function to filter and post-process anchor points based on peak characteristics.
 
