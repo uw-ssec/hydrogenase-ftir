@@ -234,5 +234,29 @@ def baseline_spline(anchor_points, degree=3, smooth=0):
     baseline_curve = pd.DataFrame({'wavenumber':x_range, 'absorbance': baseline_fit})
     return baseline_curve
 
+def baseline_correction(baseline_points, raw_wavenumber, raw_absorbance):
+    """
+    Perform baseline correction on raw absorbance data using baseline points.
+
+    Args:
+    - baseline_points (DataFrame): DataFrame containing baseline wavenumber and absorbance values.
+    - raw_wavenumber (array): List of wavenumber values from raw data.
+    - raw_absorbance (array): List of absorbance values from raw data.
+
+    Returns:
+    - baseline_corrected_abs (list): List of baseline-corrected absorbance values.
+    """
+    baseline_corrected_abs = []
+    for idx, wv_num in enumerate(raw_wavenumber): #iterate through each data point in raw data
+        #subtract the wv_num from the baseline[wavenumber] and take absolute of the diff and sort it and get the
+        #idx of the point from the baseline that is closest to the raw datapoint
+        diff_array = abs(baseline_points['wavenumber'] - wv_num)
+        #this is the index of the closest wavenumber in the baseline curve to that of the datapoint
+        closest_wv_num = diff_array.idxmin()
+        #Now subtract the baseline absornace from the raw data absorbance
+        baseline_corrected_abs.append(abs(baseline_points.loc[closest_wv_num, 'absorbance'] - raw_absorbance[idx]))
+    return baseline_corrected_abs
+
+
 
 
