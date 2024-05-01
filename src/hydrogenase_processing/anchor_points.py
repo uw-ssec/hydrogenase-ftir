@@ -5,8 +5,11 @@ import pandas as pd
 #find peaks
 from scipy.signal import find_peaks, peak_widths
 from scipy.interpolate import UnivariateSpline
+#widget
+import ipywidgets as widgets
 
-def get_peaks(second_deriv, threshold = 0.15, showplot = False):
+
+def get_peaks(second_deriv, threshold, showplot = False):
     """
     Function to detect peaks in the second derivative of a spline function.
 
@@ -43,6 +46,7 @@ def get_peaks(second_deriv, threshold = 0.15, showplot = False):
         plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
         plt.plot(second_deriv[2], second_deriv[1], label = "spline results")
         plt.legend()
+
 
     return peaks_index, deriv_x_peak_val
 
@@ -87,7 +91,7 @@ def get_start_end_anchorpoints(peaks_index, second_deriv):
     return wv_startIdx, wv_endIdx
 
 
-def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor = 1, show_plot = True):
+def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor=1, show_plot = True):
     """
     Function to filter and post-process anchor points based on peak characteristics.
 
