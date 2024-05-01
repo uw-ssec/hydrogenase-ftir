@@ -9,7 +9,7 @@ from scipy.interpolate import UnivariateSpline
 import ipywidgets as widgets
 
 
-def get_peaks(second_deriv, threshold, showplot = False):
+def get_peaks(second_deriv, threshold = 0.15 , showplot = False):
     """
     Function to detect peaks in the second derivative of a spline function.
 
