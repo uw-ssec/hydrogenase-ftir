@@ -254,7 +254,15 @@ def baseline_correction(baseline_points, raw_wavenumber, raw_absorbance):
         #this is the index of the closest wavenumber in the baseline curve to that of the datapoint
         closest_wv_num = diff_array.idxmin()
         #Now subtract the baseline absornace from the raw data absorbance
-        baseline_corrected_abs.append(abs(baseline_points.loc[closest_wv_num, 'absorbance'] - raw_absorbance[idx]))
+        raw_minus_baseline = raw_absorbance[idx] - baseline_points.loc[closest_wv_num, 'absorbance']
+
+        if raw_minus_baseline <0:
+            #if the difference is negative, then baseline point is higher than raw absorbance which is not possible. Hence appending 0 at those points
+            baseline_corrected_abs.append(0)
+        else:
+            baseline_corrected_abs.append(raw_minus_baseline)
+
+            
     return baseline_corrected_abs
 
 
