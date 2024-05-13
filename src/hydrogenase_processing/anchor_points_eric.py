@@ -9,7 +9,7 @@ from scipy.interpolate import UnivariateSpline
 import ipywidgets as widgets
 
 
-def get_peaks(second_deriv, threshold = 0.15 , showplot = False):
+def get_peaks(second_deriv, threshold = 0.15): #, showplot = False):
     """
     Function to detect peaks in the second derivative of a spline function.
 
@@ -41,14 +41,15 @@ def get_peaks(second_deriv, threshold = 0.15 , showplot = False):
 
         d2ydx2_peak_val.append(d2ydx2_peak)
         deriv_x_peak_val.append(deriv_x_peak)
-    
-    if showplot:
-        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
-        plt.plot(second_deriv[2], second_deriv[1], label = "spline results")
-        plt.legend()
 
+# inactivated for the plot to be in desired layout in the interact 
+#    if showplot:    
+#        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
+#        plt.plot(second_deriv[2], second_deriv[1], label = "spline results")
+#        plt.legend()
 
-    return peaks_index, deriv_x_peak_val
+#added d2ydx2_peak_val for ease of plotting data navigation
+    return peaks_index, deriv_x_peak_val, d2ydx2_peak_val
 
 
 
@@ -90,8 +91,8 @@ def get_start_end_anchorpoints(peaks_index, second_deriv):
         wv_startIdx.append(second_deriv[2][i])
     return wv_startIdx, wv_endIdx
 
-
-def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, plot_title=None, adj_factor=1, show_plot = True):
+#plot title deleted
+def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj_factor=1): #, show_plot = True, plot_title=None,):
     """
     Function to filter and post-process anchor points based on peak characteristics.
 
@@ -142,19 +143,19 @@ def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_point
     post_process_anchor_data = post_process_anchor_data.drop_duplicates()
     anchor_data_sorted = post_process_anchor_data.sort_values(by='wavenumber').reset_index()
 
-    if show_plot:
-        #get all peak wavenumber and absorbance for plotting
-        peak_wavenumber, peak_absorbance = get_peaks_absorbance(deriv_x_peak_val, anchor_points_raw_data, y_corr_abs)
-        plt.plot(anchor_points_raw_data, y_corr_abs)
-        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
-        plt.plot(post_process_anchor_data['wavenumber'], post_process_anchor_data['absorbance'], 'bx', label = 'anchor_points')
+#    if show_plot:
+    #get all peak wavenumber and absorbance for plotting
+    peak_wavenumber, peak_absorbance = get_peaks_absorbance(deriv_x_peak_val, anchor_points_raw_data, y_corr_abs)
+#        plt.plot(anchor_points_raw_data, y_corr_abs)
+#        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
+#        plt.plot(post_process_anchor_data['wavenumber'], post_process_anchor_data['absorbance'], 'bx', label = 'anchor_points')
         
-        plt.title(plot_title)
-        plt.xlabel("wavenumber")
-        plt.ylabel("Absorbance")
-        plt.legend()
-        plt.plot
-    return anchor_data_sorted
+#        plt.title(plot_title)
+#        plt.xlabel("wavenumber")
+#        plt.ylabel("Absorbance")
+#        plt.legend()
+#        plt.plot
+    return anchor_data_sorted, peak_wavenumber, peak_absorbance
 
 
 def get_peaks_absorbance(deriv_x_peak_val,x_wavenb, y_corr_abs):
@@ -282,10 +283,6 @@ def interact(x, example_cut_sub, threshold_guess, adj_guess):
     disabled=False
     )
     
-    #a version of the get_peaks function that is format wise easily inserted for the interactive widget function
-    def interact_with_get_peaks(threshold):
-        output = get_peaks(x, threshold, showplot=True)
-        return output
 
     #Preset adj widget range and step by us
     adj_widget = widgets.BoundedFloatText(
@@ -297,27 +294,58 @@ def interact(x, example_cut_sub, threshold_guess, adj_guess):
         disabled=False
     )
 
-    #a version of the get_all_anchor_points function that is easily inserted for the interactive ewidget function
-    def interact_with_get_all_anchor_points(adj):
-        return get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, f'Anchor points using {adj} as adj_factor', adj)
+    #a version of the get_all_anchor_points function that is easily inserted for the interactive widget function
+    #a version of the get_peaks function that is format wise easily inserted for the interactive widget function
+    def interact_with_get_peaks_and_get_all_anchor_points(threshold, adj):
+        
+        output = get_peaks(x, threshold) #, showplot=True)
+        
+        #re-extract values
+        peaks_index = output[0]
+        deriv_x_peak_val = output[1]
+        d2ydx2_peak_val = output[2]
+
+        wv_startIdx, wv_endIdx = get_start_end_anchorpoints(peaks_index[0], x)
+        y_corr_abs = example_cut_sub[0][0].sub_spectrum
+        anchor_points_raw_data = example_cut_sub[0][0].wavenb
+
+        anchor_point_dict_output, peak_wavenumber, peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj)
+
+        #second derivative plot
+        plt.subplot(2,1,1)
+        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
+        plt.plot(x[2], x[1], label = "spline results")
+        plt.title("2nd derivative plot with peak selection")
+        plt.legend()
+
+        plt.subplot(2,1,2)
+        plt.plot(anchor_points_raw_data, y_corr_abs)
+        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
+        plt.plot(anchor_point_dict_output['wavenumber'], anchor_point_dict_output['absorbance'], 'bx', label = 'anchor_points')
+        
+        plt.xlabel("wavenumber")
+        plt.ylabel("Absorbance")
+        plt.title("")
+        plt.legend()
+        
+        return output, anchor_point_dict_output, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
     
     #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
-    output = widgets.interactive(interact_with_get_peaks, threshold = threshold_widget)
+    interactive_results = widgets.interactive(interact_with_get_peaks_and_get_all_anchor_points, threshold = threshold_widget, adj = adj_widget)
     
+    print(interactive_results)
+
+    #break down the results
+    output = interactive_results.result[0]
+    anchor_point_dict_output = interactive_results.result[1]
+    deriv_x_peak_val = interactive_results.result[2]
+    anchor_points_raw_data = interactive_results.result[3]
+    y_corr_abs = interactive_results.result[4]
+
     #show the output so that it's interactive
-    display(output)
+    display(interactive_results)
 
-    #re-extract values
-    peaks_index = output.result[0]
-    deriv_x_peak_val = output.result[1]
-
-
-    wv_startIdx, wv_endIdx = get_start_end_anchorpoints(peaks_index[0], x)
-    y_corr_abs = example_cut_sub[0][0].sub_spectrum
-    anchor_points_raw_data = example_cut_sub[0][0].wavenb
-
-    anchor_point_dict_output = widgets.interactive(interact_with_get_all_anchor_points, adj = adj_widget)
-    display(anchor_point_dict_output)
-
-    anchor_point_dict = anchor_point_dict_output.result
+    anchor_point_dict = anchor_point_dict_output
     return anchor_point_dict, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
+
+
