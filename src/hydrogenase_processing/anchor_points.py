@@ -270,11 +270,34 @@ def baseline_correction(baseline_points, raw_wavenumber, raw_absorbance):
     return baseline_corrected_abs
 
 def get_peak_baseline_absorbance(raw_data, baseline_corrected_abs, peak_wv):
-    indices = np.where(np.isin(raw_data, peak_wv))[0]
-    peak_baseline_abs = [baseline_corrected_abs[i] for i in indices]
-    return peak_baseline_abs
+     """
+    Function to extract the baseline-corrected absorbance values corresponding to specified peak wavelengths.
+
+    Parameters:
+        raw_data (array-like): Array of raw wavelength data.
+        baseline_corrected_abs (list): List of baseline-corrected absorbance values.
+        peak_wv (List): List of peak wavelengths.
+
+    Returns:
+        peak_baseline_abs (list): List of baseline-corrected absorbance values corresponding to peak wavelengths.
+    """
+     indices = np.where(np.isin(raw_data, peak_wv))[0]
+     peak_baseline_abs = [baseline_corrected_abs[i] for i in indices]
+     return peak_baseline_abs
 
 def plot_baseline_data(x_wavenumber, baseline_corrected_abs, peak_wv,peak_baseline_abs ):
+    """
+    Function to plot baseline-corrected absorbance data along with identified peaks.
+
+    Parameters:
+        x_wavenumber (array-like): Array of wavenumbers for x-axis.
+        baseline_corrected_abs (list): list of baseline-corrected absorbance values.
+        peak_wv (list): list of peak wavelengths.
+        peak_baseline_abs (list): list of baseline-corrected absorbance values corresponding to peak wavelengths.
+
+    Returns:
+        None
+    """
     plt.plot(x_wavenumber,baseline_corrected_abs, label = 'baseline corrected data')
     plt.plot(peak_wv, peak_baseline_abs, 'ro', label = "peaks")
     for s, d in zip(peak_wv, peak_baseline_abs):
