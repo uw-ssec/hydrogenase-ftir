@@ -24,8 +24,6 @@ def lorentzian(x, *params):
 
 
 def peak_fit(fit_function, guess, x_wavenumber, y_absorbance, showplot = True):    
-#2091.614748864712, 2080.0497375656423,
-    #guess = [0.3, 1939, 2, 0.14, 1958, 2, 0.014, 2080.05, 2, 0.24, 2091.6, 2]
     params, _ = curve_fit(fit_function, x_wavenumber, y_absorbance, guess)
 
     if showplot:
