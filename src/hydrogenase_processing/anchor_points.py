@@ -184,7 +184,8 @@ def get_peaks_absorbance(deriv_x_peak_val,x_wavenb, y_corr_abs):
     for peak_val in deriv_x_peak_val:
         indices_within_threshold = [index for index, value in enumerate(x_wavenb) if abs(value - peak_val) <= range_width]
         data = pd.DataFrame({'wv': x_wavenb[indices_within_threshold], 'abs': y_corr_abs[indices_within_threshold]}) 
-        peak_data = data.loc[data['abs'].idxmax()]
+        #Choosing the highest wavenumber as the peak
+        peak_data = data.loc[data['wv'].idxmax()]
         peak_wavenumber.append(peak_data['wv'])
         peak_absorbance.append(peak_data['abs'])
     return peak_wavenumber, peak_absorbance
