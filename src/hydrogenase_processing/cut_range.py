@@ -133,3 +133,29 @@ def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_s
 
     return cut_raw_sub_cut_wv
 
+def cut_range_subtract_multiple_wv(raw_spectra:dict, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3, SG_points:int = 21) -> dict[OpusData]:
+    """
+    Cuts the specified range from raw spectra data and performs atmospheric subtraction over an entire dict of raw spectra.
+    
+    Args:
+        raw_spectra dict[OpusData]:Multiple raw spectra (FTIR measurements).
+        raw_wv (OpusData): Multiple water vapor data (water vapor absorption spectra).
+        range_start (int, optional): Start wavenumber for the desired range. Defaults to 3997.
+        range_end (int, optional): End wavenumber for the desired range. Defaults to 499.
+        SG_poly (int, optional): Polynomial order for Savitzky-Golay smoothing. Defaults to 3.
+        SG_points (int, optional): Number of points for Savitzky-Golay smoothing. Defaults to 21.
+    Returns:
+        dict[OpusData]: OpusData objects cut to range with water vapor subtracted
+
+    Notes: 
+        - The function extracts wavenumbers from the raw data and water vapor.
+        - It identifies the specified wavenumber range within the raw spectra.
+        - Savitzky-Golay smoothing is applied to enhance data quality.
+        - The atmospheric subtraction results are returned.
+    """
+    cut_sub_wv_data = dict()
+
+    for i in raw_spectra:
+        cut_sub_wv_data[i] = cut_range_subtraction_multiple_wv(raw_spectra[i], raw_wv, range_start, range_end)
+
+    return cut_sub_wv_data
