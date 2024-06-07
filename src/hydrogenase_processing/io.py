@@ -27,6 +27,9 @@ def import_run_data(path_to_data:Path):
     #Populating the raw_test_data dict with all the read in raw opus files
     for i in raw_files:
         if not i.name.startswith('.DS_Store'):
+            #FUTURE: pass in results of read_file into a ProSpecPy init function. Then our resulting dict is made up of 
+            #ProSpecPy objects, calling the "set_raw"
+            #Also passing in output path
             raw_data[f'{i.name}'] = read_file(i)
 
     print(raw_data.keys())
