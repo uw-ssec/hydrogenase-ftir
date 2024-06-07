@@ -91,6 +91,17 @@ def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots 
     return d2ydx2_spl, spline_over_range, x_range
 
 
+def second_deriv_batch(cut_sub_data:dict, show_plots = False):
+    """
+    Batched adaptation of second_deriv function.
+    """
+    second_deriv_data = dict()
+    for i in cut_sub_data:
+        cut_range_sub_wv_data_i = cut_sub_data[i]
+        print(i)
+        second_deriv_data[f'{i}_second_deriv'] = second_deriv(cut_range_sub_wv_data_i, show_plots=show_plots)
+
+    return second_deriv_data
 
 
 #This function returns a spline representation of the 2nd deriv of the data passed in and a numpy array with that spline expressed over a range, for passing into find peaks.
