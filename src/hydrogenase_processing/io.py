@@ -46,7 +46,7 @@ def import_run_data(path_to_data:Path, input_type = "water vapour",output_folder
                 # Initialize a new ProSpecPy object for the sample
                 new_prospecpy_obj = ProSpecPy(output_folder_for_sample)
                 # Set the raw_data attribute of the ProSpecPy object
-                new_prospecpy_obj.set_raw_data(read_file(i))
+                new_prospecpy_obj.set_raw_data(read_file(i), sample_name, batch_id)
                 # Add the ProSpecPy object to the list
                 raw_data_objects.append(new_prospecpy_obj)
                 

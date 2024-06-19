@@ -52,10 +52,6 @@ def cut_range_subtraction(raw_spectra:OpusData, raw_wv:OpusData, range_start:int
     ind_range_start = np.where(np.logical_and(whole_num_raw_spectra_x >= range_start - 2, whole_num_raw_spectra_x < range_start + 1))[0][0]
     ind_range_end = np.where(np.logical_and(whole_num_raw_spectra_x >= range_end - 2, whole_num_raw_spectra_x < range_end + 1))[0][0]
 
-    #print(range_start, range_end)
-    #print(ind_range_start, ind_range_end)
- 
-
     raw_wavenb_cut = raw_spectra_x[ind_range_start:ind_range_end + 1]
     raw_ab_cut = raw_spectra_abs[ind_range_start:ind_range_end +  1]
     wv_wavenb_cut = wv_x[ind_range_start:ind_range_end + 1]
@@ -101,8 +97,6 @@ def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_s
         wv_data_i = raw_wv[i]
         wv_abs[i] = wv_data_i["AB"][0:len(wv_data_i.get_range("AB"))]
 
-    
-
     #Rounding the wavenumbers to the nearest whole number in order to identify the range of interest.
     whole_num_raw_spectra_x = np.round(raw_spectra_x, 0)
 
@@ -121,10 +115,6 @@ def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_s
     #Combining all cut wv abs data into one columnwise array
     wv_combined_cut_abs = np.column_stack(list(wv_abs_cut.values()))
 
-    #print(range_start, range_end)
-    print(ind_range_start, ind_range_end)
- 
-
     raw_wavenb_cut = raw_spectra_x[ind_range_start:ind_range_end + 1]
     raw_ab_cut = raw_spectra_abs[ind_range_start:ind_range_end +  1]
 
@@ -134,7 +124,7 @@ def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_s
     return cut_raw_sub_cut_wv
 
 
-def cut_range_subtract_multiple_wv(raw_spectra: List, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3, SG_points:int = 21) -> dict[OpusData]:
+def cut_range_subtract_prospecpy_objects(list_of_propspecpy_object: List, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3, SG_points:int = 21) -> dict[OpusData]:
     """
     Cuts the specified range from raw spectra data and performs atmospheric subtraction over an entire dict of raw spectra.
     
@@ -154,14 +144,5 @@ def cut_range_subtract_multiple_wv(raw_spectra: List, raw_wv:dict, range_start:i
         - Savitzky-Golay smoothing is applied to enhance data quality.
         - The atmospheric subtraction results are returned.
     """
-    cut_sub_wv_data = dict()
-
-    for prospecpy_obj in raw_spectra:
+    for prospecpy_obj in list_of_propspecpy_object:
         prospecpy_obj.cut_range_subtract(raw_wv, range_start, range_end)
-        """cut_sub_data = cut_range_subtraction_multiple_wv(prospecpy_obj.get_raw_data(), raw_wv, range_start, range_end)
-        #print(cut_sub_data[1])
-        prospecpy_obj.cut_atmfitparams_obj = cut_sub_data[0]
-        prospecpy_obj.cut_subtracted_data = cut_sub_data[1]
-        #cut_sub_wv_data[index] = cut_range_subtraction_multiple_wv(prospecpy_obj.get_raw_data(), raw_wv, range_start, range_end)
-        """
-    return cut_sub_wv_data

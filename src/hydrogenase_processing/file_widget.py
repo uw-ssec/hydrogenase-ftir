@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 #Local Functions
 from hydrogenase_processing.cut_range import cut_range_subtraction, cut_range_subtraction_multiple_wv
-from hydrogenase_processing.second_deriv import second_deriv, first_deriv
+from hydrogenase_processing.second_deriv import second_deriv
 from hydrogenase_processing.anchor_points import interact
 from hydrogenase_processing.anchor_points import get_peaks, get_start_end_anchorpoints, get_all_anchor_points
 from hydrogenase_processing.vaporfit import atm_subtraction

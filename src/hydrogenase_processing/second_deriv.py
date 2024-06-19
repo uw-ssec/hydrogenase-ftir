@@ -36,7 +36,7 @@ def flip_order(x):
     return arr_invert
 
 #This function returns a spline representation of the 2nd deriv of the data passed in and a numpy array with that spline expressed over a range, for passing into find peaks.
-def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots = True):
+def second_deriv(AtmFitParamsObject, show_plots = True, sample_name = None, batch_id = None):
     """
     Computes the second derivative of a specific range of absorbance data from spectroscopic analysis which has water vapor subtracted from it  
 
@@ -60,9 +60,9 @@ def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots 
     """
     ## Extracting wavenumbers and y absorbance, and plotting it
     #wavenumbers
-    x_wavenb = cut_sub_data[0][0].wavenb
+    x_wavenb = AtmFitParamsObject[0].wavenb
     #absorbance y values
-    y_corr_abs = cut_sub_data[0][0].sub_spectrum
+    y_corr_abs = AtmFitParamsObject[0].sub_spectrum
     
     ## Taking Second Derivative, using GRADIENT
     dydx = np.gradient(y_corr_abs, x_wavenb)
@@ -74,16 +74,21 @@ def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots 
     x_range = np.linspace(x_wavenb[0],x_wavenb[-1],1000)
 
     d2ydx2_spl = UnivariateSpline(x_wavenb_invert,d2ydx2_invert,s=0,k=3)
-
-    
-    
     if show_plots:
-        plt.plot(x_wavenb, y_corr_abs)
-        plt.title("Plotting Cut and Subtracted Data")
+        plt.plot(x_wavenb, y_corr_abs, label = 'Cut and Subtracted Data')
+        if batch_id is not None:
+            plt.title(f'{sample_name} from batch_d {batch_id}')
+        else:
+            plt.title(f'{sample_name}')
+        plt.legend()
         plt.show()
 
-        plt.plot(x_wavenb, d2ydx2)
-        plt.title("Plotting Second Derivative Calculated from Gradient")
+        plt.plot(x_wavenb, d2ydx2, label = 'Second Derivative')
+        if batch_id is not None:
+            plt.title(f'{sample_name} from batch_d {batch_id}')
+        else:
+            plt.title(f'{sample_name}')
+        plt.legend()
         plt.show()
 
     spline_over_range = d2ydx2_spl(x_range)
@@ -91,60 +96,13 @@ def second_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots 
     return d2ydx2_spl, spline_over_range, x_range
 
 
-def second_deriv_batch(cut_sub_data:dict, show_plots = False):
+def second_deriv_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True):
     """
     Batched adaptation of second_deriv function.
     """
-    second_deriv_data = dict()
-    for i in cut_sub_data:
-        cut_range_sub_wv_data_i = cut_sub_data[i]
-        print(i)
-        second_deriv_data[f'{i}_second_deriv'] = second_deriv(cut_range_sub_wv_data_i, show_plots=show_plots)
 
-    return second_deriv_data
-
-
-#This function returns a spline representation of the 2nd deriv of the data passed in and a numpy array with that spline expressed over a range, for passing into find peaks.
-def first_deriv(cut_sub_data:Tuple[List[AtmFitParams], np.ndarray], show_plots = True):
-    """
-    Computes the second derivative of a specific range of absorbance data from spectroscopic analysis which has water vapor subtracted from it  
-
-    Parameters:
-        cut_sub_data (Tuple[List[AtmFitParams], np.ndarray]): A tuple where the first element is a list of AtmFitParams
-            objects, and the second element is an ndarray. The AtmFitParams objects must have 'wavenb' (wavenumbers) 
-            'spectrum' (from which atmospheric contributions will be subtracted ), and atm_spectra (array of atmosphere spectra).
-            np.ndarray: Corrected spectral data after water vapor subtraction.
-        show_plots (bool, optional): If True, the function will plot the original subtracted absorbance data and its
-            second derivative. Defaults to True.
-
-    Returns:
-        tuple: A tuple containing three elements:
-            - d2ydx2_spl: Spline representation of the second derivative of the absorbance data.
-            - spline_over_range : The evaluated spline over the specified range of wavenumbers.
-            - x_range : The range of wavenumbers over which the spline is evaluated.
-
-    Notes:
-    The function extracts the wavenumbers and corresponding absorbance values, calculates their second derivative using
-    numpy's gradient function, and then inverts the data to create a spline representation. It optionally plots the second derivative data for visual inspection.
-    """
-    ## Extracting wavenumbers and y absorbance, and plotting it
-    #wavenumbers
-    x_wavenb = cut_sub_data[0][0].wavenb
-    #absorbance y values
-    y_corr_abs = cut_sub_data[0][0].sub_spectrum
-    
-    ## Taking Second Derivative, using GRADIENT
-    dydx = np.gradient(y_corr_abs, x_wavenb)
-
-    if show_plots:
-        plt.plot(x_wavenb, y_corr_abs)
-        plt.title("Plotting Cut and Subtracted Data")
-        plt.show()
-
-        plt.plot(x_wavenb, dydx)
-        plt.title("Plotting First Derivative Calculated from Gradient")
-        plt.show()
-    return dydx
+    for prospecpy_obj in list_of_propspecpy_object:
+        prospecpy_obj.second_derivative(show_plots, save)
 
 
 
