@@ -62,12 +62,12 @@ def cut_range_subtraction(raw_spectra:OpusData, raw_wv:OpusData, range_start:int
 
     return cut_raw_sub_cut_wv
 
-def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3,SG_points:int = 21) -> Tuple[List[AtmFitParams], np.ndarray]:
+def cut_range_subtraction_multiple_wv(raw_spectra, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3,SG_points:int = 21) -> Tuple[List[AtmFitParams], np.ndarray]:
     """
     Cuts the specified range from raw spectra data and performs atmospheric subtraction using multiple water vapor spectra.
     
     Args:
-        raw_spectra (OpusData): Raw spectral data (FTIR measurements).
+        raw_spectra: Raw spectral data (FTIR measurements).
         raw_wv (dict): Dict of all water vapor spectra, with appropriately named keys.
         range_start (int, optional): Start wavenumber for the desired range. Defaults to 3997.
         range_end (int, optional): End wavenumber for the desired range. Defaults to 499.
@@ -129,20 +129,25 @@ def cut_range_subtract_prospecpy_objects(list_of_propspecpy_object: List, raw_wv
     Cuts the specified range from raw spectra data and performs atmospheric subtraction over an entire dict of raw spectra.
     
     Args:
-        raw_spectra dict[OpusData]:Multiple raw spectra (FTIR measurements).
-        raw_wv (OpusData): Multiple water vapor data (water vapor absorption spectra).
+        list_of_propspecpy_object (List[ProSpecPy]): List of ProSpecPy objects to be processed.
+        raw_wv (dict): Dictionary containing water vapor data (water vapor absorption spectra).
         range_start (int, optional): Start wavenumber for the desired range. Defaults to 3997.
         range_end (int, optional): End wavenumber for the desired range. Defaults to 499.
         SG_poly (int, optional): Polynomial order for Savitzky-Golay smoothing. Defaults to 3.
         SG_points (int, optional): Number of points for Savitzky-Golay smoothing. Defaults to 21.
-    Returns:
-        dict[OpusData]: OpusData objects cut to range with water vapor subtracted
+        showplots (bool, optional): If True, displays the plots. Defaults to False.
+        save (bool, optional): If True, saves the resulting plots. Defaults to True.
+        verbose (bool, optional): If True, prints additional information. Defaults to True.
 
-    Notes: 
-        - The function extracts wavenumbers from the raw data and water vapor.
+    Returns:
+        None
+    Notes:
+        - The function extracts wavenumbers from the raw data and water vapor data.
         - It identifies the specified wavenumber range within the raw spectra.
         - Savitzky-Golay smoothing is applied to enhance data quality.
-        - The atmospheric subtraction results are returned.
+        - The atmospheric subtraction results are applied to each ProSpecPy object in the list.
+        - If 'showplots' is True, the resulting plots will be displayed.
+        - If 'save' is True, the resulting plots will be saved.
     """
     for prospecpy_obj in list_of_propspecpy_object:
         prospecpy_obj.cut_range_subtract(raw_wv, range_start, range_end,SG_poly, SG_points, showplots, save, verbose)
