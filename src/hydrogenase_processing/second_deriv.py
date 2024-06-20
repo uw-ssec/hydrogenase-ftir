@@ -74,26 +74,46 @@ def second_deriv(AtmFitParamsObject, show_plots = True, sample_name = None, batc
     x_range = np.linspace(x_wavenb[0],x_wavenb[-1],1000)
 
     d2ydx2_spl = UnivariateSpline(x_wavenb_invert,d2ydx2_invert,s=0,k=3)
-    if show_plots:
-        plt.plot(x_wavenb, y_corr_abs, label = 'Cut and Subtracted Data')
-        if batch_id is not None:
-            plt.title(f'{sample_name} from batch_d {batch_id}')
-        else:
-            plt.title(f'{sample_name}')
-        plt.legend()
-        plt.show()
 
-        plt.plot(x_wavenb, d2ydx2, label = 'Second Derivative')
-        if batch_id is not None:
-            plt.title(f'{sample_name} from batch_d {batch_id}')
-        else:
-            plt.title(f'{sample_name}')
-        plt.legend()
-        plt.show()
+    cut_subtracted_data_fig = plot_cut_subtracted_data(x_wavenb, y_corr_abs, sample_name, batch_id, show_plots)
+    second_derivative_fig = plot_second_derivative(x_wavenb, d2ydx2, sample_name, batch_id, show_plots)
 
     spline_over_range = d2ydx2_spl(x_range)
 
-    return d2ydx2_spl, spline_over_range, x_range
+    return d2ydx2_spl, spline_over_range, x_range, cut_subtracted_data_fig, second_derivative_fig
+
+def plot_cut_subtracted_data(x_wavenb, y_corr_abs, sample_name, batch_id, showplots):
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(x_wavenb, y_corr_abs, label = 'Cut and Subtracted Data')
+    if batch_id is not None:
+        ax.set_title(f'{sample_name} from batch_d {batch_id}')
+    else:
+        ax.set_title(f'{sample_name}')
+    ax.set_xlabel('wavenumber')
+    ax.set_ylabel('absorbance')
+    ax.legend()
+    if showplots:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
+
+
+def plot_second_derivative(x_wavenb, d2ydx2, sample_name, batch_id, showplots):
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(x_wavenb, d2ydx2, label = 'Second Derivative')
+    if batch_id is not None:
+        ax.set_title(f'{sample_name} from batch_d {batch_id}')
+    else:
+        ax.set_title(f'{sample_name}')
+    ax.set_xlabel('wavenumber')
+    ax.set_ylabel('d2ydx2')
+    ax.legend()
+    if showplots:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
 
 
 def second_deriv_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True):

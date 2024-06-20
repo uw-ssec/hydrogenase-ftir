@@ -124,7 +124,7 @@ def cut_range_subtraction_multiple_wv(raw_spectra:OpusData, raw_wv:dict, range_s
     return cut_raw_sub_cut_wv
 
 
-def cut_range_subtract_prospecpy_objects(list_of_propspecpy_object: List, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3, SG_points:int = 21) -> dict[OpusData]:
+def cut_range_subtract_prospecpy_objects(list_of_propspecpy_object: List, raw_wv:dict, range_start:int = 3997, range_end:int = 499, SG_poly:int = 3, SG_points:int = 21, showplots = False, save = True, verbose=True):
     """
     Cuts the specified range from raw spectra data and performs atmospheric subtraction over an entire dict of raw spectra.
     
@@ -145,4 +145,4 @@ def cut_range_subtract_prospecpy_objects(list_of_propspecpy_object: List, raw_wv
         - The atmospheric subtraction results are returned.
     """
     for prospecpy_obj in list_of_propspecpy_object:
-        prospecpy_obj.cut_range_subtract(raw_wv, range_start, range_end)
+        prospecpy_obj.cut_range_subtract(raw_wv, range_start, range_end,SG_poly, SG_points, showplots, save, verbose)

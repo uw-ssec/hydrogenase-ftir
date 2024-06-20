@@ -39,10 +39,12 @@ def import_run_data(path_to_data:Path, input_type = "water vapour",output_folder
             batch_id, sample_name = batch_id_sample_name(str(i))
             # Read the file and store it in the raw_data dictionary
             raw_data[f'{i.name}'] = read_file(i)
+            output_folder_for_sample = None
 
             if input_type == 'raw spectra':
                 # Construct the output folder path for the sample
-                output_folder_for_sample = f'{output_folder}/{batch_id}/{sample_name}'
+                if output_folder is not None:
+                    output_folder_for_sample = f'{output_folder}/{batch_id}/{sample_name}'
                 # Initialize a new ProSpecPy object for the sample
                 new_prospecpy_obj = ProSpecPy(output_folder_for_sample)
                 # Set the raw_data attribute of the ProSpecPy object
