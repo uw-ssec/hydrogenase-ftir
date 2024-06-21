@@ -52,37 +52,18 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     description='file selection:',
     disabled=False
     )
-    
-    '''
-    def interact_files(desired_file):
-        file_names_func = os.listdir(path_to_data)
-    
-        sample_raw = cut_range_sub_wv_data[desired_file]
-        sample_raw[0][0].plot()
-        fit_atm_params_func = sample_raw[0][0].fit_atm_params
 
-        #Creating Empty Dict for second derivative of cut and subtracted data
-        second_deriv_data = dict()
-
-        #Filling it with second derivatives of all the data
-        for i in cut_range_sub_wv_data:
-            cut_range_sub_wv_data_i = cut_range_sub_wv_data[i]
-            second_deriv_data[f'{i}_second_deriv'] = second_deriv(cut_range_sub_wv_data_i, show_plots=False)
-
-        sample_second_deriv = second_deriv_data[f'{desired_file}_second_deriv']
-        
-        return sample_raw, fit_atm_params_func, sample_second_deriv
-    '''
-
-
+    style = {'description_width': '500px'}
     #Preset threshold widget range and step by us
     threshold_widget = widgets.BoundedFloatText(
-    value=threshold_guess,
-    min=0,
-    max=1,
-    step=0.01,
-    description='Threshold for peak selection(0 to 1 in 0.01 steps):',
-    disabled=False
+        value=threshold_guess,
+        min=0,
+        max=1,
+        step=0.01,
+        description='Threshold for peak selection(0 to 1 in 0.01 steps):',
+        disabled=False,
+        layout=widgets.Layout(width='70%'),
+        style = style
     )
     
 
@@ -93,9 +74,11 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         max=5,
         step=0.01,
         description='adj for anchor point selection(0 to 5 in 0.01 steps):',
-        disabled=False
+        disabled=False,
+        layout=widgets.Layout(width='70%'),
+        style=style
     )
-
+    
     ##edits on 6/13/24
     submit = widgets.Button(
     description ='Submit'
@@ -131,7 +114,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
             second_deriv_data[f'{i}_second_deriv'] = second_deriv(cut_range_sub_wv_data_i, show_plots=False)
 
         sample_second_deriv = second_deriv_data[f'{desired_file}_second_deriv']
-        
+
         output = get_peaks(sample_second_deriv, threshold)
         
         #re-extract values
@@ -163,14 +146,15 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         plt.legend()
 
         submit.on_click(button_click)
-        display(submit)
+        #display(submit)
+
         
         return output, anchor_point_dict_output, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
     
     #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
     interactive_results = widgets.interactive(interact_with_functions, desired_file = file_widget, threshold = threshold_widget, adj = adj_widget)
     
-    print(interactive_results)
+    #print(interactive_results)
 
     #break down the results
     output = interactive_results.result[0]
@@ -181,8 +165,11 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
 
     #show the output so that it's interactive
     display(interactive_results)
-    
+    display(threshold_widget)
+    display(adj_widget)
     anchor_point_dict = anchor_point_dict_output
+    display(submit)
+    
     return anchor_point_dict, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
 
 
