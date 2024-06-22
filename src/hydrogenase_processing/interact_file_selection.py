@@ -62,7 +62,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         step=0.01,
         description='Threshold for peak selection(0 to 1 in 0.01 steps):',
         disabled=False,
-        layout=widgets.Layout(width='70%'),
+        layout=widgets.Layout(width='30%'),
         style = style
     )
     
@@ -75,7 +75,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         step=0.01,
         description='adj for anchor point selection(0 to 5 in 0.01 steps):',
         disabled=False,
-        layout=widgets.Layout(width='70%'),
+        layout=widgets.Layout(width='30%'),
         style=style
     )
     
@@ -128,22 +128,26 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
 
         anchor_point_dict_output, peak_wavenumber, peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj)
 
+        plt.figure(figsize=(18, 6))
+
         #second derivative plot
-        plt.subplot(2,1,1)
+        plt.subplot(1,2,1)
         plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
         plt.plot(sample_second_deriv[2], sample_second_deriv[1], label = "spline results")
-        plt.title("2nd derivative plot with peak selection")
+        plt.title("Second derivative plot peak selection")
         plt.legend()
 
-        plt.subplot(2,1,2)
+        plt.subplot(1,2,2)
         plt.plot(anchor_points_raw_data, y_corr_abs)
         plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
         plt.plot(anchor_point_dict_output['wavenumber'], anchor_point_dict_output['absorbance'], 'bx', label = 'anchor_points')
         
         plt.xlabel("wavenumber")
         plt.ylabel("Absorbance")
-        plt.title("")
+        plt.title("Anchor point selection")
         plt.legend()
+
+        plt.tight_layout()
 
         submit.on_click(button_click)
         #display(submit)
@@ -155,6 +159,11 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     interactive_results = widgets.interactive(interact_with_functions, desired_file = file_widget, threshold = threshold_widget, adj = adj_widget)
     
     #print(interactive_results)
+    file_selection_display = interactive_results.children[0]
+    threshold_adj_plot_display = interactive_results.children[1]
+    threshold_adj_display = interactive_results.children[2]
+    raw_display = interactive_results.children[3]
+    
 
     #break down the results
     output = interactive_results.result[0]
@@ -164,11 +173,15 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     y_corr_abs = interactive_results.result[4]
 
     #show the output so that it's interactive
-    display(interactive_results)
-    display(threshold_widget)
-    display(adj_widget)
-    anchor_point_dict = anchor_point_dict_output
+    display(file_selection_display)
+    display(raw_display) 
+    display(threshold_adj_plot_display)
+    display(threshold_adj_display)
+    
     display(submit)
+    
+    anchor_point_dict = anchor_point_dict_output
+   
     
     return anchor_point_dict, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
 
