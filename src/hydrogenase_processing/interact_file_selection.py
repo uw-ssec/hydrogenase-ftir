@@ -49,7 +49,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     
     file_widget = widgets.ToggleButtons(
     options = sorted_file_names,
-    description='file selection:',
+    description='Step 1. File selection:',
     disabled=False
     )
 
@@ -67,6 +67,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     )
     
 
+    
     #Preset adj widget range and step by us
     adj_widget = widgets.BoundedFloatText(
         value=adj_guess,
@@ -93,16 +94,17 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         threshold_save = threshold_widget.value
         adj_save = adj_widget.value
         file_save = file_widget.value
-        print(f'saved file:{file_save}, threshold:{threshold_save}, adj:{adj_save}')
+        print(f'Saved file:{file_save}, threshold:{threshold_save}, adj:{adj_save}')
     
 
 
     #a version of the get_all_anchor_points function that is easily inserted for the interactive widget function
     #a version of the get_peaks function that is format wise easily inserted for the interactive widget function
     def interact_with_functions(desired_file, threshold, adj):
-    
+        
         sample_raw = cut_range_sub_wv_data[desired_file]
         sample_raw[0][0].plot()
+
         fit_atm_params_func = sample_raw[0][0].fit_atm_params
 
         #Creating Empty Dict for second derivative of cut and subtracted data
@@ -148,6 +150,8 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         plt.legend()
 
         plt.tight_layout()
+
+        print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
 
         submit.on_click(button_click)
         #display(submit)
