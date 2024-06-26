@@ -85,6 +85,10 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     description ='Submit'
     )
 
+    oops = widgets.Button(
+    description = 'Oops'
+    )
+
     threshold_save = []
     adj_save = []
     file_save = []
@@ -99,6 +103,11 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         #print(f'Saved file:{file_save}, threshold:{threshold_save}, adj:{adj_save}')
         
         return file_save, threshold_save, adj_save
+    
+    def do_over(b):
+        del file_save[-1]
+        del threshold_save[-1]
+        del adj_save[-1]
     
 
 
@@ -160,6 +169,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         submit.on_click(button_click)
         #display(submit)
 
+        oops.on_click(do_over)
         
         return output, anchor_point_dict_output, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
     
@@ -187,6 +197,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
     display(threshold_adj_display)
     
     display(submit)
+    display(oops)
     
     anchor_point_dict = anchor_point_dict_output
    
