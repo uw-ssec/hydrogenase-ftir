@@ -140,7 +140,7 @@ class AtmFitParams:
                 linewidth=0.5)
         ax.plot(self.wavenb,self.spectrum,c='black',label='original spec.',\
                 linewidth=0.5)
-        plt.title(f'{file_name[-15:-4]}')
+        plt.title('Range cut water vapor subtracted plot')#f'{file_name[-15:-4]}')
         plt.legend()
         plt.xlabel('wavenumber ($cm^{-1}$)')
         plt.ylabel('absorbance')
