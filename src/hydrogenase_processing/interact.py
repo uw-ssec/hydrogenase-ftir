@@ -62,7 +62,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         step=0.01,
         description='Threshold for peak selection(0 to 1 in 0.01 steps):',
         disabled=False,
-        layout=widgets.Layout(width='30%'),
+        layout=widgets.Layout(width='70%'),
         style = style
     )
     
@@ -76,7 +76,7 @@ def interact(path_to_data_input, path_to_water_vapor_input, threshold_guess, adj
         step=0.01,
         description='adj for anchor point selection(0 to 5 in 0.01 steps):',
         disabled=False,
-        layout=widgets.Layout(width='30%'),
+        layout=widgets.Layout(width='70%'),
         style=style
     )
     
