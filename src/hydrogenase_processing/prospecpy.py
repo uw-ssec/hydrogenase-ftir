@@ -1,5 +1,6 @@
 from hydrogenase_processing.cut_range import cut_range_subtraction_multiple_wv
 from hydrogenase_processing.second_deriv import second_deriv
+from hydrogenase_processing.anchor_points import get_peaks
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -19,6 +20,8 @@ class ProSpecPy:
         self.cut_atmfitparameters = []
         self.batch_id = None
         self.sample_name = None
+        self.second_deriv_dict = {}
+        self.peak_dict = {}
     
     def set_raw_data(self, raw_data, sample_name = None, batch_id= None):
         self.raw_data = raw_data
@@ -85,11 +88,10 @@ class ProSpecPy:
                 print(f"Cut subtracted data saved to {os.path.join(self.output_folder, cut_subtracted_data_filename)}")
     
     def second_derivative(self, showplots = False, save = True, verbose = True):
-        spline_object, second_deriv_absorbance, second_deriv_wavenumber, cut_subtracted_data_fig, second_derivative_fig = second_deriv(self.get_atmfitparam_obj(), show_plots=showplots, sample_name=self.sample_name, batch_id=self.batch_id)
-        self.second_deriv_dict = {}
-        self.second_deriv_dict['UniSpline_Object'] = spline_object
-        self.second_deriv_dict['absorbance'] = second_deriv_absorbance
-        self.second_deriv_dict['wavenumber'] = second_deriv_wavenumber
+        self.second_deriv_tuple, cut_subtracted_data_fig, second_derivative_fig = second_deriv(self.get_atmfitparam_obj(), show_plots=showplots, sample_name=self.sample_name, batch_id=self.batch_id)
+        self.second_deriv_dict['UniSpline_Object'] = self.second_deriv_tuple[0]
+        self.second_deriv_dict['absorbance'] = self.second_deriv_tuple[1]
+        self.second_deriv_dict['wavenumber'] = self.second_deriv_tuple[2]
         if save:
             filename = 'subtracted_spectra'
             self.save_plot(cut_subtracted_data_fig,filename, verbose=verbose)
@@ -112,6 +114,30 @@ class ProSpecPy:
 
     def get_second_deriv_dict(self):
         return self.second_deriv_dict
+    
+    def get_second_deriv_tuple(self):
+        return self.second_deriv_tuple
+
+    def peak_fit(self, threshold):
+        self.threshold = threshold
+        self.peak_information, peak_wavenumber, peak_seconderiv_absorbance = get_peaks(self.get_second_deriv_tuple(), self.threshold)
+        peak_index = self.peak_information[0]
+        self.peak_dict['peak_index'] = peak_index
+        self.peak_dict['peak_wavenumber'] = peak_wavenumber
+        self.peak_dict['peak_second_deriv_absorbance'] = peak_seconderiv_absorbance
+
+    def get_peak_dict(self):
+        return self.peak_dict
+    
+    def get_peak_index(self):
+        return self.peak_dict['peak_index']
+    
+    def save_second_deriv_peak_plot(self):
+        #TO DO
+        pass
+
+    
+
     
 
 

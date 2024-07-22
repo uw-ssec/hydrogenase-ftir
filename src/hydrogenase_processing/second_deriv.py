@@ -79,8 +79,9 @@ def second_deriv(AtmFitParamsObject, show_plots = True, sample_name = None, batc
     second_derivative_fig = plot_second_derivative(x_wavenb, d2ydx2, sample_name, batch_id, show_plots)
 
     spline_over_range = d2ydx2_spl(x_range)
+    second_deriv_tuple = (d2ydx2_spl, spline_over_range, x_range)
 
-    return d2ydx2_spl, spline_over_range, x_range, cut_subtracted_data_fig, second_derivative_fig
+    return second_deriv_tuple, cut_subtracted_data_fig, second_derivative_fig
 
 def plot_cut_subtracted_data(x_wavenb, y_corr_abs, sample_name, batch_id, showplots):
     fig, ax = plt.subplots(figsize=(10,5))
