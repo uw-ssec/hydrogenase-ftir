@@ -117,13 +117,13 @@ def plot_second_derivative(x_wavenb, d2ydx2, sample_name, batch_id, showplots):
     return fig
 
 
-def second_deriv_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True):
+def second_deriv_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True, verbose = True):
     """
     Batched adaptation of second_deriv function.
     """
 
     for prospecpy_obj in list_of_propspecpy_object:
-        prospecpy_obj.second_derivative(show_plots, save)
+        prospecpy_obj.second_derivative(show_plots, save, verbose)
 
 
 

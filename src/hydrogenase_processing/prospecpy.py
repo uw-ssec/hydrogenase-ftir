@@ -1,9 +1,11 @@
 from hydrogenase_processing.cut_range import cut_range_subtraction_multiple_wv
 from hydrogenase_processing.second_deriv import second_deriv
-from hydrogenase_processing.anchor_points import get_peaks
+from hydrogenase_processing.anchor_points import get_peaks,get_start_end_anchorpoints,get_all_anchor_points, get_peaks_absorbance
+from hydrogenase_processing.baseline import baseline_spline, baseline_correction,get_baseline_peak_index
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+
 class ProSpecPy:
     def __init__(self, output_folder_path= None) -> None:
         self.output_folder = output_folder_path
@@ -21,7 +23,10 @@ class ProSpecPy:
         self.batch_id = None
         self.sample_name = None
         self.second_deriv_dict = {}
-        self.peak_dict = {}
+        self.second_deriv_peak_dict = {}
+        self.anchor_points = None
+        self.anchor_points_peak_dict = {}
+        self.baseline_curve = None
     
     def set_raw_data(self, raw_data, sample_name = None, batch_id= None):
         self.raw_data = raw_data
@@ -57,6 +62,12 @@ class ProSpecPy:
     
     def get_atmfitparam_obj(self):
         return self.cut_atmfitparams_obj
+    
+    def get_subtracted_spectra_absorbance(self):
+        return self.get_atmfitparam_obj()[0].sub_spectrum
+    
+    def get_subtracted_spectra_wavenumber(self):
+        return self.get_atmfitparam_obj()[0].wavenb
     
     def plot_subtracted_spectra(self, save = True, showplots = False):
         subtracted_fig = self.get_atmfitparam_obj()[0].plot(self.sample_name, self.batch_id, showplots =showplots)
@@ -118,30 +129,52 @@ class ProSpecPy:
     def get_second_deriv_tuple(self):
         return self.second_deriv_tuple
 
-    def peak_fit(self, threshold):
+    def peak_finder(self, threshold):
         self.threshold = threshold
         self.peak_information, peak_wavenumber, peak_seconderiv_absorbance = get_peaks(self.get_second_deriv_tuple(), self.threshold)
         peak_index = self.peak_information[0]
-        self.peak_dict['peak_index'] = peak_index
-        self.peak_dict['peak_wavenumber'] = peak_wavenumber
-        self.peak_dict['peak_second_deriv_absorbance'] = peak_seconderiv_absorbance
+        self.second_deriv_peak_dict['peak_index'] = peak_index
+        self.second_deriv_peak_dict['peak_wavenumber'] = peak_wavenumber
+        self.second_deriv_peak_dict['peak_second_deriv_absorbance'] = peak_seconderiv_absorbance
 
-    def get_peak_dict(self):
-        return self.peak_dict
+    def get_second_deriv_peak_dict(self):
+        return self.second_deriv_peak_dict
     
     def get_peak_index(self):
-        return self.peak_dict['peak_index']
+        return self.second_deriv_peak_dict['peak_index']
     
     def save_second_deriv_peak_plot(self):
         #TO DO
         pass
-
+        
+    def anchor_point_fit(self, adjustment_factor):
+        wv_startIdx, wv_endIdx = get_start_end_anchorpoints(self.get_peak_index(), self.get_second_deriv_tuple())
+        anchor_points, peak_wavenumber,peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(), self.get_subtracted_spectra_absorbance(), adjustment_factor)
+        self.anchor_points = anchor_points
+        self.anchor_points_peak_dict['peak_wavenumber'] = peak_wavenumber
+        self.anchor_points_peak_dict['peak_absorbance'] = peak_absorbance
     
-
+    def get_anchor_points_peak_dict(self):
+        return self.anchor_points_peak_dict
     
-
-
+    def get_anchor_points(self):
+        return self.anchor_points
     
+    def baseline_fit(self):
+        self.baseline_curve = baseline_spline(self.get_anchor_points())
+    
+    def get_baseline_curve(self):
+        return self.baseline_curve
+    
+    def subtract_baseline(self):
+        self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
+        peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
+        peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, self.get_subtracted_spectra_wavenumber(), peak_wv) 
+        self.baseline_corrected_peak_dict['peak_index'] = peak_wv_index
+        self.baseline_corrected_peak_dict['wavenumber'] = peak_wv_baseline
+        self.baseline_corrected_peak_dict['absorbance'] = peak_baseline_abs
+
+        
 
     
     

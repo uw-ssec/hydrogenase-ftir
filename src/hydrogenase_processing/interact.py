@@ -42,6 +42,17 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         style=style
     )
 
+    """baseline_widget = widgets.BoundedFloatText(
+        value=threshold_guess,
+        min=0,
+        max=1,
+        step=0.001,
+        description='Smooth factor for baseline curve fitting:',
+        disabled=False,
+        layout=widgets.Layout(width='70%'),
+        style = style
+    )"""
+
     Save = widgets.Button(
     description ='Save'
     )
@@ -61,7 +72,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         threshold_save.append(threshold_widget.value)
         adj_save.append(adj_widget.value)
         file_save.append(file_widget.value)
-        #print(f'Saved file:{file_save}, threshold:{threshold_save}, adj:{adj_save}')
+
         return file_save, threshold_save, adj_save
     
     def do_over(b):
@@ -81,8 +92,8 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         prospecpy_obj = sampleName_prospecpyObj_map[sample_name]
         prospecpy_obj.plot_subtracted_spectra(save = False, showplots = True)
 
-        prospecpy_obj.peak_fit(threshold)
-        peak_info_dict = prospecpy_obj.get_peak_dict()
+        prospecpy_obj.peak_finder(threshold)
+        peak_info_dict = prospecpy_obj.get_second_deriv_peak_dict()
         second_deriv_dict = prospecpy_obj.get_second_deriv_dict()
         plt.figure(figsize=(18, 6))
 
@@ -94,41 +105,28 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         plt.xlabel("wavenumber ($cm^{-1}$)")
         plt.ylabel("second derivative (absorbance)")
         plt.legend()
-        
 
+        #anchor points curve fitting
+        prospecpy_obj.anchor_point_fit(adj)
+        anchor_points_peak_dict = prospecpy_obj.get_anchor_points_peak_dict()
+        anchor_point_peak_wv = anchor_points_peak_dict['peak_wavenumber']
+        anchor_point_peak_absorbance = anchor_points_peak_dict['peak_absorbance']
+        anchor_points_data = prospecpy_obj.get_anchor_points()
+        anchor_points_wv = anchor_points_data['wavenumber']
+        anchor_points_abs = anchor_points_data['absorbance']
 
-
-        """output = get_peaks(sample_second_deriv, threshold)
-        
-        #re-extract values
-        peaks_index = output[0]
-        deriv_x_peak_val = output[1]
-        d2ydx2_peak_val = output[2]
-
-        wv_startIdx, wv_endIdx = get_start_end_anchorpoints(peaks_index[0], sample_second_deriv)
-        y_corr_abs = sample_raw[0][0].sub_spectrum
-        anchor_points_raw_data = sample_raw[0][0].wavenb
-
-        anchor_point_dict_output, peak_wavenumber, peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj)
-
-        plt.figure(figsize=(18, 6))
-
-        #second derivative plot
-        plt.subplot(1,2,1)
-        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
-        plt.plot(sample_second_deriv[2], sample_second_deriv[1], label = "spline results")
-        plt.title("Second derivative plot peak selection")
-        plt.legend()
+        prospecpy_obj.baseline_fit()
+        baseline_curve = prospecpy_obj.get_baseline_curve()
 
         plt.subplot(1,2,2)
-        plt.plot(anchor_points_raw_data, y_corr_abs)
-        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
-        plt.plot(anchor_point_dict_output['wavenumber'], anchor_point_dict_output['absorbance'], 'bx', label = 'anchor_points')
-        
+        plt.plot(prospecpy_obj.get_subtracted_spectra_wavenumber(), prospecpy_obj.get_subtracted_spectra_absorbance())
+        plt.plot(anchor_point_peak_wv,anchor_point_peak_absorbance,'ro', label='peaks')
+        plt.plot(anchor_points_wv, anchor_points_abs, 'bx', label = 'anchor_points')
+        plt.plot(baseline_curve['wavenumber'], baseline_curve['absorbance'], 'g--', label = 'baseline fit')
         plt.xlabel("wavenumber")
         plt.ylabel("Absorbance")
         plt.title("Anchor point selection")
-        plt.legend()"""
+        plt.legend()
 
         plt.tight_layout()
 
@@ -138,8 +136,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         #display(submit)
 
         Undo.on_click(do_over)
-        
-        #return output, anchor_point_dict_output, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
+      
     #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
     interactive_results = widgets.interactive(interact_with_functions, sample_name = file_widget, threshold = threshold_widget, adj = adj_widget)
     
