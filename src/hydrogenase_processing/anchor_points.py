@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 #find peaks
 from scipy.signal import find_peaks, peak_widths
-from scipy.interpolate import UnivariateSpline
 #widget
 import ipywidgets as widgets
 
@@ -41,14 +40,6 @@ def get_peaks(second_deriv, threshold = 0.15): #, showplot = False):
 
         d2ydx2_peak_val.append(d2ydx2_peak)
         deriv_x_peak_val.append(deriv_x_peak)
-
-# inactivated for the plot to be in desired layout in the interact 
-#    if showplot:    
-#        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
-#        plt.plot(second_deriv[2], second_deriv[1], label = "spline results")
-#        plt.legend()
-
-#added d2ydx2_peak_val for ease of plotting data navigation
     return peaks_index, deriv_x_peak_val, d2ydx2_peak_val
 
 
@@ -70,10 +61,6 @@ def get_start_end_anchorpoints(peaks_index, second_deriv):
         x-coordinate values(wavenumber) of the start anchor points of peaks.
     - wv_endIdx: list
         x-coordinate values(wavenumber) of the end anchor points of peaks.
-    - width_startIdx: list
-        Indices of the start anchor points of peaks.
-    - width_endIdx: list
-        Indices of the end anchor points of peaks.
     """
     d2ydx2_spl_upsidedown = second_deriv[1] * -1
     peak_wid = peak_widths(d2ydx2_spl_upsidedown, peaks_index, rel_height=1) 
@@ -91,8 +78,8 @@ def get_start_end_anchorpoints(peaks_index, second_deriv):
         wv_startIdx.append(second_deriv[2][i])
     return wv_startIdx, wv_endIdx
 
-#plot title deleted
-def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj_factor=1): #, show_plot = True, plot_title=None,):
+
+def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj_factor=1): 
     """
     Function to filter and post-process anchor points based on peak characteristics.
 
@@ -143,18 +130,8 @@ def get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_point
     post_process_anchor_data = post_process_anchor_data.drop_duplicates()
     anchor_data_sorted = post_process_anchor_data.sort_values(by='wavenumber').reset_index()
 
-#    if show_plot:
     #get all peak wavenumber and absorbance for plotting
     peak_wavenumber, peak_absorbance = get_peaks_absorbance(deriv_x_peak_val, anchor_points_raw_data, y_corr_abs)
-#        plt.plot(anchor_points_raw_data, y_corr_abs)
-#        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
-#        plt.plot(post_process_anchor_data['wavenumber'], post_process_anchor_data['absorbance'], 'bx', label = 'anchor_points')
-        
-#        plt.title(plot_title)
-#        plt.xlabel("wavenumber")
-#        plt.ylabel("Absorbance")
-#        plt.legend()
-#        plt.plot
     return anchor_data_sorted, peak_wavenumber, peak_absorbance
 
 
@@ -217,172 +194,7 @@ def get_smaller_peak_width(deriv_x_peak_val, wv_startIdx, wv_endIdx):
     return smaller_peak_wid
 
 
-def baseline_spline(anchor_points, degree=3, smooth=0):
-    """
-    Function to fit a spline curve to anchor points data to estimate baseline.
-
-    Parameters:
-    - anchor_points: DataFrame
-        DataFrame containing anchor points with 'wavenumber' and 'absorbance' columns.
-    - degree: int, optional (default=3)
-        Degree of the spline interpolation.
-    - smooth: float, optional (default=0)
-        Smoothing parameter for spline fitting.
-
-    Returns:
-    - baseline_curve: DataFrame
-        DataFrame containing the fitted baseline curve with 'wavenumber' and 'absorbance' columns.
-    """
-    spline_fit = UnivariateSpline(anchor_points['wavenumber'], anchor_points['absorbance'],k = degree, s=smooth)
-    x_range = np.linspace(int(min(anchor_points['wavenumber'])), int(max(anchor_points['wavenumber'])), 1000)
-    #x_range = anchor_points['wavenumber']
-    baseline_fit = spline_fit(x_range)
-    baseline_curve = pd.DataFrame({'wavenumber':x_range, 'absorbance': baseline_fit})
-    return baseline_curve
-
-def baseline_correction(baseline_points, raw_wavenumber, raw_absorbance):
-    """
-    Perform baseline correction on raw absorbance data using baseline points.
-
-    Args:
-    - baseline_points (DataFrame): DataFrame containing baseline wavenumber and absorbance values.
-    - raw_wavenumber (array): List of wavenumber values from raw data.
-    - raw_absorbance (array): List of absorbance values from raw data.
-
-    Returns:
-    - baseline_corrected_abs (list): List of baseline-corrected absorbance values.
-    """
-    baseline_corrected_abs = []
-    for idx, wv_num in enumerate(raw_wavenumber): #iterate through each data point in raw data
-        #subtract the wv_num from the baseline[wavenumber] and take absolute of the diff and sort it and get the
-        #idx of the point from the baseline that is closest to the raw datapoint
-        diff_array = abs(baseline_points['wavenumber'] - wv_num)
-        #this is the index of the closest wavenumber in the baseline curve to that of the datapoint
-        closest_wv_num = diff_array.idxmin()
-        #Now subtract the baseline absornace from the raw data absorbance
-        raw_minus_baseline = raw_absorbance[idx] - baseline_points.loc[closest_wv_num, 'absorbance']
-
-        if raw_minus_baseline <0:
-            #if the difference is negative, then baseline point is higher than raw absorbance which is not possible. Hence appending 0 at those points
-            baseline_corrected_abs.append(0)
-        else:
-            baseline_corrected_abs.append(raw_minus_baseline)
-
-            
-    return baseline_corrected_abs
-
-
-def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data_peak_wv, showplots = True):
-    #get all the peaks index in the baselinecorrected data with no thresholds
-    peak_index_baseline = find_peaks(baseline_corrected_abs)
-    #get the corresponding wavenumbers present at the peak_index
-    baseline_peak_wv = [[rawdata_wavenumber[i], i] for i in peak_index_baseline[0]]
-    #Now obtain the corresponding peak wavenumbers using raw_data_peak_wv as reference. This was found using the 
-    #raw spectra data
-    range = 2
-    peak_wv_baseline =[]
-    peak_idx_baseline =[]
-    for raw_wv in raw_data_peak_wv:
-        ans = [ [wv[0], wv[1]] for wv in baseline_peak_wv if abs(wv[0] - raw_wv) <= range ]
-        if ans:
-            peak_wv_baseline.append(ans[0][0])
-            peak_idx_baseline.append(ans[0][1])
-    
-    peak_baseline_abs = []
-    for index in peak_idx_baseline:
-        peak_baseline_abs.append(baseline_corrected_abs[index])
-
-    if showplots:
-        plt.plot(rawdata_wavenumber,baseline_corrected_abs, label = 'baseline corrected data')
-        plt.plot(peak_wv_baseline, peak_baseline_abs, 'ro', label = "peaks")
-        for s, d in zip(peak_wv_baseline, peak_baseline_abs):
-            plt.annotate(round(s, 2), xy = (s,d), rotation = 90)
-        plt.xlabel('wavenumber')
-        plt.ylabel('absorbance')
-        plt.legend()
-    
-    return peak_idx_baseline, peak_wv_baseline, peak_baseline_abs
-
-
-#addition from Eric interactive widgets
-def interact(x, example_cut_sub, threshold_guess, adj_guess):
-    
-    #Preset threshold widget range and step by us
-    threshold_widget = widgets.BoundedFloatText(
-    value=threshold_guess,
-    min=0,
-    max=1,
-    step=0.01,
-    description='Threshold for peak selection(0 to 1 in 0.01 steps):',
-    disabled=False
-    )
-    
-
-    #Preset adj widget range and step by us
-    adj_widget = widgets.BoundedFloatText(
-        value=adj_guess,
-        min=0,
-        max=5,
-        step=0.01,
-        description='adj for anchor point selection(0 to 5 in 0.01 steps):',
-        disabled=False
-    )
-
-    #a version of the get_all_anchor_points function that is easily inserted for the interactive widget function
-    #a version of the get_peaks function that is format wise easily inserted for the interactive widget function
-    def interact_with_get_peaks_and_get_all_anchor_points(threshold, adj):
-        
-        output = get_peaks(x, threshold) #, showplot=True)
-        
-        #re-extract values
-        peaks_index = output[0]
-        deriv_x_peak_val = output[1]
-        d2ydx2_peak_val = output[2]
-
-        wv_startIdx, wv_endIdx = get_start_end_anchorpoints(peaks_index[0], x)
-        y_corr_abs = example_cut_sub[0][0].sub_spectrum
-        anchor_points_raw_data = example_cut_sub[0][0].wavenb
-
-        anchor_point_dict_output, peak_wavenumber, peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs, adj)
-
-        #second derivative plot
-        plt.subplot(2,1,1)
-        plt.plot(deriv_x_peak_val, d2ydx2_peak_val, "ro",label = "peak finder peaks")
-        plt.plot(x[2], x[1], label = "spline results")
-        plt.title("2nd derivative plot with peak selection")
-        plt.legend()
-
-        plt.subplot(2,1,2)
-        plt.plot(anchor_points_raw_data, y_corr_abs)
-        plt.plot(peak_wavenumber, peak_absorbance,'ro', label='peaks')
-        plt.plot(anchor_point_dict_output['wavenumber'], anchor_point_dict_output['absorbance'], 'bx', label = 'anchor_points')
-        
-        plt.xlabel("wavenumber")
-        plt.ylabel("Absorbance")
-        plt.title("")
-        plt.legend()
-        
-        return output, anchor_point_dict_output, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
-    
-    #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
-    interactive_results = widgets.interactive(interact_with_get_peaks_and_get_all_anchor_points, threshold = threshold_widget, adj = adj_widget)
-    
-    print(interactive_results)
-
-    #break down the results
-    output = interactive_results.result[0]
-    anchor_point_dict_output = interactive_results.result[1]
-    deriv_x_peak_val = interactive_results.result[2]
-    anchor_points_raw_data = interactive_results.result[3]
-    y_corr_abs = interactive_results.result[4]
-
-    #show the output so that it's interactive
-    display(interactive_results)
-    
-    anchor_point_dict = anchor_point_dict_output
-    return anchor_point_dict, deriv_x_peak_val, anchor_points_raw_data, y_corr_abs
-
-
 def get_peak_wid_at_half_height(baseline_corrected_abs, peak_wv_index):
     peak_wid = peak_widths(baseline_corrected_abs, peak_wv_index, rel_height=0.5) 
     return peak_wid[0]
+

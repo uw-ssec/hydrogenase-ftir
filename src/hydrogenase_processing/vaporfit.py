@@ -134,16 +134,22 @@ class AtmFitParams:
             atm_sum = np.sum((self.fit_atm_params[:-3]*self.atm_spectra),axis=1)
         sub_spectrum = self.spectrum - atm_sum - baseln
         return sub_spectrum
-    def plot(self,save=False,file_name='figure.png'):
+    def plot(self,sample_name = None, batch_id = None, showplots = False):
         fig, ax = plt.subplots(figsize=(10,5))
         ax.plot(self.wavenb,self.sub_spectrum,c='red',label='corrected spec.',\
                 linewidth=0.5)
         ax.plot(self.wavenb,self.spectrum,c='black',label='original spec.',\
                 linewidth=0.5)
-        plt.title('Range cut water vapor subtracted plot')#f'{file_name[-15:-4]}')
-        plt.legend()
-        plt.xlabel('wavenumber ($cm^{-1}$)')
-        plt.ylabel('absorbance')
-        if save == True:
-            plt.savefig(file_name,dpi=300)
-        plt.show()
+        if batch_id is not None:
+            ax.set_title(f'{sample_name} from batch_id {batch_id}')
+        else:
+            ax.set_title(sample_name)
+        ax.legend()
+        ax.set_xlabel('wavenumber ($cm^{-1}$)')
+        ax.set_ylabel('absorbance')
+        if showplots:
+            plt.show()
+        else:
+            plt.close(fig)
+        return fig
+
