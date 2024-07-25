@@ -62,7 +62,7 @@ def baseline_correction(baseline_points, raw_wavenumber, raw_absorbance):
 
 
 
-def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data_peak_wv, showplots = True):
+def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data_peak_wv):
     #get all the peaks index in the baselinecorrected data with no thresholds
     peak_index_baseline = find_peaks(baseline_corrected_abs)
     #get the corresponding wavenumbers present at the peak_index
@@ -81,14 +81,32 @@ def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data
     peak_baseline_abs = []
     for index in peak_idx_baseline:
         peak_baseline_abs.append(baseline_corrected_abs[index])
-
-    if showplots:
-        plt.plot(rawdata_wavenumber,baseline_corrected_abs, label = 'baseline corrected data')
-        plt.plot(peak_wv_baseline, peak_baseline_abs, 'ro', label = "peaks")
-        for s, d in zip(peak_wv_baseline, peak_baseline_abs):
-            plt.annotate(round(s, 2), xy = (s,d), rotation = 90)
-        plt.xlabel('wavenumber')
-        plt.ylabel('absorbance')
-        plt.legend()
     
     return peak_idx_baseline, peak_wv_baseline, peak_baseline_abs
+
+def plot_baseline_corrected_data(x_wavenb, baseline_abs, peak_wv, peak_abs,sample_name, batch_id, showplots):
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(x_wavenb, baseline_abs, label = 'Baseline Subtracted Data')
+    ax.plot(peak_wv, peak_abs, 'ro', label = 'peaks')
+    for s, d in zip(peak_wv, peak_abs):
+            plt.annotate(round(s, 2), xy = (s,d), rotation = 90)
+    if batch_id is not None:
+        ax.set_title(f'{sample_name} from batch_d {batch_id}')
+    else:
+        ax.set_title(f'{sample_name}')
+    ax.set_xlabel('wavenumber ($cm^{-1}$)')
+    ax.set_ylabel('absorbance')
+    ax.legend()
+    if showplots:
+        plt.show()
+    else:
+        plt.close(fig)
+    return fig
+
+def baseline_correction_prospecpy_objects(list_of_propspecpy_object, showplot = False, save = True, verbose = True):
+    """
+    Batched adaptation of second_deriv function.
+    """
+
+    for prospecpy_obj in list_of_propspecpy_object:
+        prospecpy_obj.subtract_baseline(save, showplot,verbose)

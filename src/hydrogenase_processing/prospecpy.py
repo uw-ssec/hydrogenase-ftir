@@ -1,10 +1,12 @@
 from hydrogenase_processing.cut_range import cut_range_subtraction_multiple_wv
 from hydrogenase_processing.second_deriv import second_deriv
-from hydrogenase_processing.anchor_points import get_peaks,get_start_end_anchorpoints,get_all_anchor_points, get_peaks_absorbance
-from hydrogenase_processing.baseline import baseline_spline, baseline_correction,get_baseline_peak_index
+from hydrogenase_processing.anchor_points import get_peaks,get_start_end_anchorpoints,get_all_anchor_points, get_peaks_absorbance, get_peak_wid_at_half_height
+from hydrogenase_processing.baseline import baseline_spline, baseline_correction,get_baseline_peak_index, plot_baseline_corrected_data
+from hydrogenase_processing.peak_fit import peak_fit
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
+import csv
 
 class ProSpecPy:
     def __init__(self, output_folder_path= None) -> None:
@@ -27,6 +29,8 @@ class ProSpecPy:
         self.anchor_points = None
         self.anchor_points_peak_dict = {}
         self.baseline_curve = None
+        self.baseline_corrected_peak_dict = {}
+        self.peak_width_half_height = None
     
     def set_raw_data(self, raw_data, sample_name = None, batch_id= None):
         self.raw_data = raw_data
@@ -166,15 +170,68 @@ class ProSpecPy:
     def get_baseline_curve(self):
         return self.baseline_curve
     
-    def subtract_baseline(self):
-        self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
-        peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
-        peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, self.get_subtracted_spectra_wavenumber(), peak_wv) 
-        self.baseline_corrected_peak_dict['peak_index'] = peak_wv_index
-        self.baseline_corrected_peak_dict['wavenumber'] = peak_wv_baseline
-        self.baseline_corrected_peak_dict['absorbance'] = peak_baseline_abs
+    def subtract_baseline(self, save = True, showplot = True, verbose = True):
 
-        
+        if self.baseline_curve is not None:
+            self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
+            peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
+            peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, self.get_subtracted_spectra_wavenumber(), peak_wv) 
+            self.peak_width_half_height = get_peak_wid_at_half_height(self.baseline_corrected_abs,peak_wv_index) #need to verify if its giving the widths in order of peaks before saving TO DO!
+            #print(self.peak_width_half_height)
+            self.baseline_corrected_peak_dict['peak_index'] = peak_wv_index
+            self.baseline_corrected_peak_dict['wavenumber'] = peak_wv_baseline
+            self.baseline_corrected_peak_dict['absorbance'] = peak_baseline_abs
+            baseline_corrected_fig = plot_baseline_corrected_data(self.get_subtracted_spectra_wavenumber(), self.baseline_corrected_abs, peak_wv_baseline, peak_baseline_abs, self.sample_name, self.batch_id, showplot)
+            if save:
+                filename = 'baseline_subtracted_spectra'
+                self.save_plot(baseline_corrected_fig,filename, verbose=verbose)
+                if verbose:
+                    print(f"Baseline subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
+
+                data_df = pd.DataFrame({
+                    'wavenumber': self.get_subtracted_spectra_wavenumber(),
+                    'absorbance': self.baseline_corrected_abs
+                })
+                csv_filename = 'baseline_corrected_data.csv'
+                data_df.to_csv(os.path.join(self.output_folder, csv_filename), index=False)
+                if verbose:
+                    print(f"Baseline corrected csv data saved to {os.path.join(self.output_folder, csv_filename)}")
+                
+                baseline_peak_filename = os.path.join(self.output_folder, 'baseline_corrected_peak_info.csv')
+                keys = self.baseline_corrected_peak_dict.keys()
+                values = zip(*self.baseline_corrected_peak_dict.values())
+
+                # Write to CSV
+                with open(baseline_peak_filename, 'w', newline='') as csvfile:
+                    writer = csv.writer(csvfile)
+                    writer.writerow(keys)
+                    writer.writerows(values)
+                if verbose:
+                    print(f"Baseline corrected peak info saved to {baseline_peak_filename}")
+
+                
+        else:
+            print("Please set and save the thresholds and adjustment factor for baseline spline!")
+    
+
+    def gaussian_fit_baseline(self, save = True, showplot =True, verbose = True):
+        if self.baseline_corrected_abs is not None:
+        #need to modify the peak fit parameters and how it saving. #also if gaussian fit fails need to handle that exception in the next code change
+            self.gaussian_peak_fit_parameters, self.gausian_peak_fit_rmse = peak_fit('Gaussian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], showplot)
+        #To add saving functionality
+
+    def lorentzian_fit_baseline(self, save = True, showplot =True, verbose = True):
+        if self.baseline_corrected_abs is not None:
+        #need to modify the peak fit parameters and how it saving. #also if gaussian fit fails need to handle that exception in the next code change
+            self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse = peak_fit('Lorentzian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], showplot)
+        #To add saving functionality
+
+
+
+
+
+
+
 
     
     

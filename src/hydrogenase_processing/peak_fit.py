@@ -57,3 +57,12 @@ def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, showplot = Tr
         plt.legend()
         
     return params, rmse
+
+def gaussian_fit_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True, verbose = True):
+    """
+    Batched adaptation of second_deriv function.
+    """
+
+    for prospecpy_obj in list_of_propspecpy_object:
+            prospecpy_obj.gaussian_fit_baseline(show_plots, save, verbose)
+

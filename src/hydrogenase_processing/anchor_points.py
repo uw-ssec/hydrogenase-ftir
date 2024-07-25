@@ -197,3 +197,4 @@ def get_smaller_peak_width(deriv_x_peak_val, wv_startIdx, wv_endIdx):
 def get_peak_wid_at_half_height(baseline_corrected_abs, peak_wv_index):
     peak_wid = peak_widths(baseline_corrected_abs, peak_wv_index, rel_height=0.5) 
     return peak_wid[0]
+
