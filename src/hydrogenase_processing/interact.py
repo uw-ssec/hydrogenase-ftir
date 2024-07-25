@@ -1,3 +1,4 @@
+
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 from IPython.display import display
@@ -16,7 +17,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
                     description='Step 1. File selection:',
                     disabled=False
                     )
-    
     style = {'description_width': '500px'}
     #Preset threshold widget range and step by us
     threshold_widget = widgets.BoundedFloatText(
@@ -64,7 +64,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     threshold_save = []
     adj_save = []
     file_save = []
-    
+
     def button_click(a):
         #global threshold_save
         #global adj_save
@@ -72,7 +72,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         threshold_save.append(threshold_widget.value)
         adj_save.append(adj_widget.value)
         file_save.append(file_widget.value)
-
         return file_save, threshold_save, adj_save
     
     def do_over(b):
@@ -95,10 +94,12 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         prospecpy_obj.peak_finder(threshold)
         peak_info_dict = prospecpy_obj.get_second_deriv_peak_dict()
         second_deriv_dict = prospecpy_obj.get_second_deriv_dict()
+
         plt.figure(figsize=(18, 6))
 
         #second derivative plot
         plt.subplot(1,2,1)
+
         plt.plot(peak_info_dict['peak_wavenumber'], peak_info_dict['peak_second_deriv_absorbance'], "ro",label = "peak finder peaks")
         plt.plot(second_deriv_dict['wavenumber'], second_deriv_dict['absorbance'], label = "spline results")
         plt.title("Second derivative plot peak selection")
@@ -146,7 +147,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     threshold_adj_display = interactive_results.children[2]
     raw_display = interactive_results.children[3]
 
-        #show the output so that it's interactive
     display(file_selection_display)
     display(raw_display) 
     display(threshold_adj_plot_display)
@@ -154,5 +154,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     
     display(Save)
     display(Undo)
+
 
 

@@ -152,3 +152,4 @@ class AtmFitParams:
         else:
             plt.close(fig)
         return fig
+
