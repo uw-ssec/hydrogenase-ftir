@@ -2,6 +2,7 @@
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
 from IPython.display import display
+import csv # to export the anchor point coordinates
 
 def interact(prospecpy_objects, threshold_guess, adj_guess):
     #First object in the interactive session is the file name selection
@@ -57,30 +58,25 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     description ='Save'
     )
 
-    Undo = widgets.Button(
-    description = 'Undo'
-    )
+    #undo button is deleted after deciding for save bottom to overwrite previous values
+    #Undo = widgets.Button(
+    #description = 'Undo'
+    #)
 
     threshold_save = []
     adj_save = []
-    file_save = []
+    file_save = [] 
+    #anchor_point_save = {} #potiential: if we want to output anchor points of different samples together
 
-    def button_click(a):
-        #global threshold_save
-        #global adj_save
-        #global file_name_save
-        threshold_save.append(threshold_widget.value)
-        adj_save.append(adj_widget.value)
-        file_save.append(file_widget.value)
-        return file_save, threshold_save, adj_save
+    #location of def botton_click is shifted down such that the anchor point values can be saved
     
-    def do_over(b):
-        try:
-            del file_save[-1]
-            del threshold_save[-1]
-            del adj_save[-1]
-        except IndexError:
-            print("Cannot delete values. No saved values for threshold and adjustment factor found. Please submit values before Oops")
+    #def do_over(b):
+    #    try:
+    #        del file_save[-1]
+    #        del threshold_save[-1]
+    #        del adj_save[-1]
+    #    except IndexError:
+    #        print("Cannot delete values. No saved values for threshold and adjustment factor found. Please submit values before Oops")
 
 
 
@@ -132,11 +128,41 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
         plt.tight_layout()
 
         print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
+        
+        #location of button_click function shifted to save the anchor point coordinates
+        def button_click(a):
+            #global threshold_save
+            #global adj_save
+            #global file_name_save
+            threshold_save.append(threshold_widget.value)
+            adj_save.append(adj_widget.value)
+            file_save.append(file_widget.value)
+            
+            #prepare anchor point coordinates
+            anchor_point_wv_save = anchor_points_wv
+            anchor_point_ab_save = anchor_points_abs
+            rows = zip(anchor_point_wv_save, anchor_point_ab_save)
+            
+            #export the samples in their individual csv file
+            file_path = f'{prospecpy_objects[0].output_folder}/{sample_name}_anchor_point_coordinates.csv'
+
+            with open(file_path, mode='w', newline='') as file:
+                #create a csv writer object
+                writer = csv.writer(file)
+                
+                #write the headers
+                headers = ["Wavenumber", "Asborbance", f"{sample_name}"]
+                writer.writerow(headers)
+
+                #wirte the data
+                writer.writerows(rows)
+            
+            return file_save, threshold_save, adj_save
 
         Save.on_click(button_click)
         #display(submit)
 
-        Undo.on_click(do_over)
+        #Undo.on_click(do_over)
       
     #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
     interactive_results = widgets.interactive(interact_with_functions, sample_name = file_widget, threshold = threshold_widget, adj = adj_widget)
@@ -153,7 +179,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     display(threshold_adj_display)
     
     display(Save)
-    display(Undo)
+    #display(Undo)
 
 
 
