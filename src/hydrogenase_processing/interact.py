@@ -144,14 +144,14 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
             rows = zip(anchor_point_wv_save, anchor_point_ab_save)
             
             #export the samples in their individual csv file
-            file_path = f'{prospecpy_objects[0].output_folder}/{sample_name}_anchor_point_coordinates.csv'
+            file_path = f'{prospecpy_obj.output_folder}/anchor_point_coordinates.csv'
 
             with open(file_path, mode='w', newline='') as file:
                 #create a csv writer object
                 writer = csv.writer(file)
                 
                 #write the headers
-                headers = ["Wavenumber", "Asborbance", f"{sample_name}"]
+                headers = ["Wavenumber", "Asborbance"]
                 writer.writerow(headers)
 
                 #wirte the data
