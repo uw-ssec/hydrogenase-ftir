@@ -84,7 +84,10 @@ class ProSpecPy:
         self.cut_atmfitparams_obj = cut_sub_data[0]
         atmfitparams_object = self.cut_atmfitparams_obj
         self.cut_atmfitparameters = atmfitparams_object[0].fit_atm_params
+        cut_subtracted_data_wv = self.get_atmfitparam_obj()[0].wavenb
+        #print(cut_subtracted_data_wv)
         self.cut_subtracted_data = cut_sub_data[1]
+        #print(self.get_atmfitparam_obj()[0].sub_spectrum)
         cut_subtract_fig = self.plot_subtracted_spectra(showplots = showplot)
         if save:
             filename = 'cut_range_subtracted_spectra'
@@ -97,7 +100,9 @@ class ProSpecPy:
                 print(f"Atmospheric fit parameters saved to {os.path.join(self.output_folder, atmfitparams_filename)}")
             
             # Save cut_subtracted_data as CSV
-            cut_subtracted_data_df = pd.DataFrame(self.cut_subtracted_data)
+            cut_subtracted_data_df = pd.DataFrame({'wavenumber': self.get_atmfitparam_obj()[0].wavenb, 
+                                                   'cut_subtracted_absorbance': self.get_atmfitparam_obj()[0].sub_spectrum})
+            #print(len(cut_subtracted_data_df))
             cut_subtracted_data_filename = 'cut_subtracted_data.csv'
             cut_subtracted_data_df.to_csv(os.path.join(self.output_folder, cut_subtracted_data_filename), index=False)
             if verbose:
