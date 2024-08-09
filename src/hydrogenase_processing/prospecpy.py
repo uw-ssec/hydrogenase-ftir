@@ -219,9 +219,34 @@ class ProSpecPy:
         if self.baseline_corrected_abs is not None:
             try:
                 self.gaussian_peak_fit_parameters, self.gaussian_peak_fit_rmse, gaussian_fit_fig = peak_fit('Gaussian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                
+                fit_height = []
+                fit_center = []
+                fit_sigma = []
+                params = self.gaussian_peak_fit_parameters
+
+                for i in range(0, len(params), 3):
+                    fit_height.append(params[i])
+                    fit_center.append(params[i+1])
+                    fit_sigma.append(params[i+2])
+                
+                
                 if save:
                     filename = 'gaussian_fit_plot'
                     self.save_plot(gaussian_fit_fig,filename, verbose=verbose)
+
+                data_df = pd.DataFrame({
+                'gaussian_fit_height': fit_height,
+                'gaussian_fit_center': fit_center,
+                'gaussian_fit_width': fit_sigma,
+                })
+                csv_filename = 'gaussian_fit_params.csv'
+                data_df.to_csv(os.path.join(self.output_folder, csv_filename), index=False)
+                if verbose:
+                    print(f"Gaussian csv data saved to {os.path.join(self.output_folder, csv_filename)}")
+
+
+
                     #if verbose:
                     #    print(f"Gaussian fit plot saved to {os.path.join(self.output_folder, filename)}")
 
@@ -232,11 +257,28 @@ class ProSpecPy:
         if self.baseline_corrected_abs is not None:
             try:
                 self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse, lorentzian_fit_fig = peak_fit('Lorentzian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                fit_height = []
+                fit_center = []
+                fit_sigma = []
+                params = self.lorentzian_peak_fit_parameters
+
+                for i in range(0, len(params), 3):
+                    fit_height.append(params[i])
+                    fit_center.append(params[i+1])
+                    fit_sigma.append(params[i+2])
+                
                 if save:
                     filename = 'lorentzian_fit_plot'
                     self.save_plot(lorentzian_fit_fig,filename, verbose=verbose)
-                    #if verbose:
-                    #    print(f"Lorentzian fit plot saved to {os.path.join(self.output_folder, filename)}")
+                    data_df = pd.DataFrame({
+                        'lorentzian_fit_height': fit_height,
+                        'lorentzian_fit_center': fit_center,
+                        'lorentzian_fit_width': fit_sigma,
+                         })
+                    csv_filename = 'lorentzian_fit_params.csv'
+                    data_df.to_csv(os.path.join(self.output_folder, csv_filename), index=False)
+                    if verbose:
+                        print(f"Lorentzian csv data saved to {os.path.join(self.output_folder, csv_filename)}")
 
             except Exception as e:
                 print(f"An error occurred: {e}")

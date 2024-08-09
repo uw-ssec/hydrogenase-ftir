@@ -37,7 +37,7 @@ def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, sample_name, 
         guess.append(peak_center)
         peak_wid = all_peak_wid[i]
         guess.append(peak_wid)
-    print(guess)
+
     if fit_function == 'Gaussian':
         objective_function = gaussian
     elif fit_function == 'Lorentzian':
@@ -46,17 +46,6 @@ def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, sample_name, 
         raise ValueError("fit_function must be 'Gaussian' or 'Lorentzian'")  # Handle invalid input
 
     params, _ = curve_fit(objective_function, x_wavenumber, y_absorbance, guess)
-
-    fit_height = []
-    fit_center = []
-    fit_width = []
-    while i < len(peak_index):
-        print(i)
-        for j in range(i, len(peak_index),3):
-            print(j)
-
-
-
 
     # Calculate RMSE
     predicted_absorbance = objective_function(x_wavenumber, *params)
