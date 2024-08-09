@@ -97,7 +97,10 @@ class ProSpecPy:
                 print(f"Atmospheric fit parameters saved to {os.path.join(self.output_folder, atmfitparams_filename)}")
             
             # Save cut_subtracted_data as CSV
-            cut_subtracted_data_df = pd.DataFrame(self.cut_subtracted_data)
+            cut_subtracted_data_df = pd.DataFrame({'wavenumber': self.get_atmfitparam_obj()[0].wavenb, 
+                                                   'cut_subtracted_absorbance':
+                                                   self.get_atmfitparam_obj()[0].sub_spectrum})
+            #print(len(cut_subtracted_data_df))
             cut_subtracted_data_filename = 'cut_subtracted_data.csv'
             cut_subtracted_data_df.to_csv(os.path.join(self.output_folder, cut_subtracted_data_filename), index=False)
             if verbose:
