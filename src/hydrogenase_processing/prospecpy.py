@@ -31,6 +31,7 @@ class ProSpecPy:
         self.baseline_curve = None
         self.baseline_corrected_peak_dict = {}
         self.peak_width_half_height = None
+        self.baseline_corrected_abs = None
     
     def set_raw_data(self, raw_data, sample_name = None, batch_id= None):
         self.raw_data = raw_data
@@ -110,13 +111,13 @@ class ProSpecPy:
         if save:
             filename = 'subtracted_spectra'
             self.save_plot(cut_subtracted_data_fig,filename, verbose=verbose)
-            if verbose:
-                print(f"subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
+            #if verbose:
+            #    print(f"subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
 
             second_deriv_filename = 'second_derivative_fig'
             self.save_plot(second_derivative_fig,second_deriv_filename, verbose=verbose)
-            if verbose:
-                print(f"second derivative plot saved to {os.path.join(self.output_folder, second_deriv_filename)}")
+            #if verbose:
+            #    print(f"second derivative plot saved to {os.path.join(self.output_folder, second_deriv_filename)}")
 
             data_df = pd.DataFrame({
                 'wavenumber': self.second_deriv_dict['wavenumber'],
@@ -185,8 +186,8 @@ class ProSpecPy:
             if save:
                 filename = 'baseline_subtracted_spectra'
                 self.save_plot(baseline_corrected_fig,filename, verbose=verbose)
-                if verbose:
-                    print(f"Baseline subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
+                #if verbose:
+                    #print(f"Baseline subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
 
                 data_df = pd.DataFrame({
                     'wavenumber': self.get_subtracted_spectra_wavenumber(),
@@ -216,16 +217,71 @@ class ProSpecPy:
 
     def gaussian_fit_baseline(self, save = True, showplot =True, verbose = True):
         if self.baseline_corrected_abs is not None:
-        #need to modify the peak fit parameters and how it saving. #also if gaussian fit fails need to handle that exception in the next code change
-            self.gaussian_peak_fit_parameters, self.gausian_peak_fit_rmse = peak_fit('Gaussian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], showplot)
-        #To add saving functionality
+            try:
+                self.gaussian_peak_fit_parameters, self.gaussian_peak_fit_rmse, gaussian_fit_fig = peak_fit('Gaussian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                
+                fit_height = []
+                fit_center = []
+                fit_sigma = []
+                params = self.gaussian_peak_fit_parameters
+
+                for i in range(0, len(params), 3):
+                    fit_height.append(params[i])
+                    fit_center.append(params[i+1])
+                    fit_sigma.append(params[i+2])
+                
+                
+                if save:
+                    filename = 'gaussian_fit_plot'
+                    self.save_plot(gaussian_fit_fig,filename, verbose=verbose)
+
+                data_df = pd.DataFrame({
+                'gaussian_fit_height': fit_height,
+                'gaussian_fit_center': fit_center,
+                'gaussian_fit_width': fit_sigma,
+                })
+                csv_filename = 'gaussian_fit_params.csv'
+                data_df.to_csv(os.path.join(self.output_folder, csv_filename), index=False)
+                if verbose:
+                    print(f"Gaussian csv data saved to {os.path.join(self.output_folder, csv_filename)}")
+
+
+
+                    #if verbose:
+                    #    print(f"Gaussian fit plot saved to {os.path.join(self.output_folder, filename)}")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
     def lorentzian_fit_baseline(self, save = True, showplot =True, verbose = True):
         if self.baseline_corrected_abs is not None:
-        #need to modify the peak fit parameters and how it saving. #also if gaussian fit fails need to handle that exception in the next code change
-            self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse = peak_fit('Lorentzian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], showplot)
-        #To add saving functionality
+            try:
+                self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse, lorentzian_fit_fig = peak_fit('Lorentzian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                fit_height = []
+                fit_center = []
+                fit_sigma = []
+                params = self.lorentzian_peak_fit_parameters
 
+                for i in range(0, len(params), 3):
+                    fit_height.append(params[i])
+                    fit_center.append(params[i+1])
+                    fit_sigma.append(params[i+2])
+                
+                if save:
+                    filename = 'lorentzian_fit_plot'
+                    self.save_plot(lorentzian_fit_fig,filename, verbose=verbose)
+                    data_df = pd.DataFrame({
+                        'lorentzian_fit_height': fit_height,
+                        'lorentzian_fit_center': fit_center,
+                        'lorentzian_fit_width': fit_sigma,
+                         })
+                    csv_filename = 'lorentzian_fit_params.csv'
+                    data_df.to_csv(os.path.join(self.output_folder, csv_filename), index=False)
+                    if verbose:
+                        print(f"Lorentzian csv data saved to {os.path.join(self.output_folder, csv_filename)}")
+
+            except Exception as e:
+                print(f"An error occurred: {e}")
 
 
 

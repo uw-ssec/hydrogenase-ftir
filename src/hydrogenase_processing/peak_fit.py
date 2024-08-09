@@ -24,11 +24,12 @@ def lorentzian(x, *params):
     return y
 
 
-def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, showplot = True): 
+def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, sample_name, batch_id,showplot = True): 
 
     get_peak_wid = peak_widths(y_absorbance, peak_index, rel_height=1) 
     all_peak_wid = get_peak_wid[0]
     guess = []
+    
     for i, idx in enumerate(peak_index):
         peak_height = y_absorbance[idx]
         guess.append(peak_height)
@@ -50,19 +51,40 @@ def peak_fit(fit_function, x_wavenumber, y_absorbance, peak_index, showplot = Tr
     predicted_absorbance = objective_function(x_wavenumber, *params)
     residuals = y_absorbance - predicted_absorbance
     rmse = np.sqrt(np.mean(residuals**2))
+    fig, ax = plt.subplots(figsize=(10,5))
+    ax.plot(x_wavenumber,y_absorbance, label = 'baseline corrected data')
+    ax.plot(x_wavenumber, predicted_absorbance, label = f'{fit_function} curve fit')
+    if batch_id is not None:
+        ax.set_title(f'{sample_name} from batch_d {batch_id}')
+    else:
+        ax.set_title(f'{sample_name}')
+    ax.set_xlabel('wavenumber ($cm^{-1}$)')
+    ax.set_ylabel('absorbance')
+    ax.legend()
+
 
     if showplot:
-        plt.plot(x_wavenumber,y_absorbance, label = 'baseline corrected data')
-        plt.plot(x_wavenumber, predicted_absorbance, label = f'{fit_function} curve fit')
-        plt.legend()
-        
-    return params, rmse
+        plt.show()
+    else:
+        plt.close(fig)
+    return params, rmse, fig
+
 
 def gaussian_fit_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True, verbose = True):
     """
-    Batched adaptation of second_deriv function.
+    Batched adaptation of gaussian_fit_baseline function.
     """
 
     for prospecpy_obj in list_of_propspecpy_object:
+            #print(f'processing plots for {prospecpy_obj.sample_name}')
             prospecpy_obj.gaussian_fit_baseline(show_plots, save, verbose)
+
+def lorentzian_fit_prospecpy_objects(list_of_propspecpy_object, show_plots = False, save = True, verbose = True):
+    """
+    Batched adaptation of lorentzian_fit_baseline function.
+    """
+
+    for prospecpy_obj in list_of_propspecpy_object:
+            #print(f'processing plots for {prospecpy_obj.sample_name}')
+            prospecpy_obj.lorentzian_fit_baseline(show_plots, save, verbose)
 
