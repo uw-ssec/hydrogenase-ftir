@@ -3,6 +3,7 @@ import ipywidgets as widgets
 import matplotlib.pyplot as plt
 from IPython.display import display
 import csv # to export the anchor point coordinates
+import os
 
 def interact(prospecpy_objects, threshold_guess, adj_guess):
     #First object in the interactive session is the file name selection
@@ -10,7 +11,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     sampleName_prospecpyObj_map = {}
     for prospecpy_obj in prospecpy_objects:
         sampleName_prospecpyObj_map[prospecpy_obj.sample_name] = prospecpy_obj
-
     sorted_file_names = sorted(sampleName_prospecpyObj_map.keys())
 
     file_widget = widgets.ToggleButtons(
@@ -63,9 +63,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #description = 'Undo'
     #)
 
-    threshold_save = []
-    adj_save = []
-    file_save = [] 
+    
     #anchor_point_save = {} #potiential: if we want to output anchor points of different samples together
 
     #location of def botton_click is shifted down such that the anchor point values can be saved
@@ -78,11 +76,14 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #    except IndexError:
     #        print("Cannot delete values. No saved values for threshold and adjustment factor found. Please submit values before Oops")
 
-
-
+    current_output_address = prospecpy_obj.output_folder
+    #print('current output path', current_output_address)
+    last_slash_index = current_output_address.rfind('/')
+    output_address = current_output_address[:last_slash_index]
+    #print(output_address)
     
+
     def interact_with_functions(sample_name, threshold, adj):
-        
         #plotting subtracted spectra
         prospecpy_obj = sampleName_prospecpyObj_map[sample_name]
         prospecpy_obj.plot_subtracted_spectra(save = False, showplots = True)
@@ -129,22 +130,35 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
 
         print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
         
+        
+        
+        
         #location of button_click function shifted to save the anchor point coordinates
         def button_click(a):
+            #print('interactive count',sample_name)
             #global threshold_save
             #global adj_save
             #global file_name_save
+            threshold_save = []
+            adj_save = []
+            file_save = []
+
             threshold_save.append(threshold_widget.value)
             adj_save.append(adj_widget.value)
             file_save.append(file_widget.value)
-            
+            input_param = [[file_save, threshold_save, adj_save]]
+            #print('file_save append outcome', file_save)
+
+
             #prepare anchor point coordinates
             anchor_point_wv_save = anchor_points_wv
             anchor_point_ab_save = anchor_points_abs
             rows = zip(anchor_point_wv_save, anchor_point_ab_save)
             
             #export the samples in their individual csv file
-            file_path = f'{prospecpy_obj.output_folder}/anchor_point_coordinates.csv'
+            file_path = f'{output_address}/{file_save[0]}/anchor_point_coordinates.csv'
+            file_path2 = f'{output_address}/{file_save[0]}/interact_input_parameters.csv'
+            #print('write to', prospecpy_obj.output_folder)
 
             with open(file_path, mode='w', newline='') as file:
                 #create a csv writer object
@@ -157,12 +171,17 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
                 #wirte the data
                 writer.writerows(rows)
             
-            return file_save, threshold_save, adj_save
+            with open(file_path2, mode='w', newline='') as content:
+                writer2 = csv.writer(content)
 
+                headers2 = ["file name", "threshold", "adj_factor"]
+                writer2.writerow(headers2)
+                
+                writer2.writerows(input_param)
+            
+            
         Save.on_click(button_click)
-        #display(submit)
-
-        #Undo.on_click(do_over)
+       
       
     #use one output because the output has to follow structure of ipywidget output and only interactive and produce non package specific objects
     interactive_results = widgets.interactive(interact_with_functions, sample_name = file_widget, threshold = threshold_widget, adj = adj_widget)
