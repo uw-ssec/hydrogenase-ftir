@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from IPython.display import display
 import csv # to export the anchor point coordinates
 import os
+import pandas as pd
+from tabulate import tabulate
 
 def interact(prospecpy_objects, threshold_guess, adj_guess):
     #First object in the interactive session is the file name selection
@@ -130,7 +132,13 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
 
         print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
         
-        
+        file_save_check = f'{output_address}/{sample_name}/interact_input_parameters.csv'
+
+        if os.path.exists(file_save_check):
+            parameters = pd.read_csv(file_save_check)
+            parameters = parameters.iloc[:,1:]
+            print('\n' + f'{sample_name} saved parameters:')
+            print(tabulate(parameters, headers='keys', tablefmt='grid'))
         
         
         #location of button_click function shifted to save the anchor point coordinates
