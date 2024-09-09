@@ -1,7 +1,7 @@
 from hydrogenase_processing.cut_range import cut_range_subtraction_multiple_wv
 from hydrogenase_processing.second_deriv import second_deriv
 from hydrogenase_processing.anchor_points import get_peaks,get_start_end_anchorpoints,get_all_anchor_points, get_peaks_absorbance, get_peak_wid_at_half_height
-from hydrogenase_processing.baseline import baseline_spline, baseline_correction,get_baseline_peak_index, plot_baseline_corrected_data
+from hydrogenase_processing.baseline import baseline_spline, raw_spline, baseline_correction,get_baseline_peak_index, plot_baseline_corrected_data
 from hydrogenase_processing.peak_fit import peak_fit
 import os
 import matplotlib.pyplot as plt
@@ -219,15 +219,18 @@ class ProSpecPy: #class object running to organize script from the src directory
     def subtract_baseline(self, save = True, showplot = True, verbose = True):
 
         if self.baseline_curve is not None:
-            self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
-            peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())
-            peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, self.get_subtracted_spectra_wavenumber(), peak_wv) 
+            #use spline results for subtraction to avoid discreet subtraction results
+            self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
+            peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
+            print('peak_wv', peak_wv)
+            peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], peak_wv)#self.get_subtracted_spectra_wavenumber(), peak_wv) 
+            print('peak wv baseline', peak_wv_baseline)
             self.peak_width_half_height = get_peak_wid_at_half_height(self.baseline_corrected_abs,peak_wv_index) #need to verify if its giving the widths in order of peaks before saving TO DO!
             #print(self.peak_width_half_height)
             self.baseline_corrected_peak_dict['peak_index'] = peak_wv_index
             self.baseline_corrected_peak_dict['wavenumber'] = peak_wv_baseline
             self.baseline_corrected_peak_dict['absorbance'] = peak_baseline_abs
-            baseline_corrected_fig = plot_baseline_corrected_data(self.get_subtracted_spectra_wavenumber(), self.baseline_corrected_abs, peak_wv_baseline, peak_baseline_abs, self.sample_name, self.batch_id, showplot)
+            baseline_corrected_fig = plot_baseline_corrected_data(raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], self.baseline_corrected_abs, peak_wv_baseline, peak_baseline_abs, self.sample_name, self.batch_id, showplot)
             if save:
                 filename = 'baseline_subtracted_spectra'
                 self.save_plot(baseline_corrected_fig,filename, verbose=verbose)
@@ -235,7 +238,7 @@ class ProSpecPy: #class object running to organize script from the src directory
                     #print(f"Baseline subtracted_spectra plot saved to {os.path.join(self.output_folder, filename)}")
 
                 data_df = pd.DataFrame({
-                    'wavenumber': self.get_subtracted_spectra_wavenumber(),
+                    'wavenumber': raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0],
                     'absorbance': self.baseline_corrected_abs
                 })
                 csv_filename = 'baseline_corrected_data.csv'
@@ -269,7 +272,7 @@ class ProSpecPy: #class object running to organize script from the src directory
     def gaussian_fit_baseline(self, save = True, showplot =True, verbose = True):
         if self.baseline_corrected_abs is not None:
             try:
-                self.gaussian_peak_fit_parameters, self.gaussian_peak_fit_rmse, gaussian_fit_fig = peak_fit('Gaussian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                self.gaussian_peak_fit_parameters, self.gaussian_peak_fit_rmse, gaussian_fit_fig = peak_fit('Gaussian',  raw_spline(self.get_subtracted_spectra_wavenumber(), self.get_subtracted_spectra_absorbance())[0],self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
                 
                 fit_height = []
                 fit_center = []
@@ -307,7 +310,7 @@ class ProSpecPy: #class object running to organize script from the src directory
     def lorentzian_fit_baseline(self, save = True, showplot =True, verbose = True):
         if self.baseline_corrected_abs is not None:
             try:
-                self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse, lorentzian_fit_fig = peak_fit('Lorentzian',  self.get_subtracted_spectra_wavenumber(),self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
+                self.lorentzian_peak_fit_parameters, self.lorentzian_peak_fit_rmse, lorentzian_fit_fig = peak_fit('Lorentzian',  raw_spline(self.get_subtracted_spectra_wavenumber(), self.get_subtracted_spectra_absorbance())[0],self.baseline_corrected_abs,self.baseline_corrected_peak_dict['peak_index'], sample_name=self.sample_name, batch_id=self.batch_id, showplot=showplot)
                 fit_height = []
                 fit_center = []
                 fit_sigma = []
