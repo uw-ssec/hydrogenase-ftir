@@ -8,8 +8,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import csv
 
-class ProSpecPy:
+class ProSpecPy: #class object running to organize script from the src directory
     def __init__(self, output_folder_path= None) -> None:
+
+        #output folder attribute creation
         self.output_folder = output_folder_path
         if self.output_folder is not None:
             if os.path.exists(self.output_folder):
@@ -19,20 +21,32 @@ class ProSpecPy:
         else:
             print("No output folder specified! Results from analysis will not be saved")
         self.raw_data = None
+
+        #range cut and water vapor removal
         self.cut_subtracted_data = None
         self.cut_atmfitparams_obj = None
         self.cut_atmfitparameters = []
+
+
         self.batch_id = None
         self.sample_name = None
+
+        #2nd derivative
         self.second_deriv_dict = {}
         self.second_deriv_peak_dict = {}
+
+        #anchor points
         self.anchor_points = None
         self.anchor_points_peak_dict = {}
+
+        #baseline correction
         self.baseline_curve = None
         self.baseline_corrected_peak_dict = {}
         self.peak_width_half_height = None
         self.baseline_corrected_abs = None
     
+
+    #Section 1: raw data extract
     def set_raw_data(self, raw_data, sample_name = None, batch_id= None):
         self.raw_data = raw_data
         self.sample_name = sample_name
@@ -41,6 +55,9 @@ class ProSpecPy:
     def get_raw_data(self):
         return self.raw_data
     
+
+
+    # + repeat use tool function
     def save_plot(self, fig, filename, verbose=True):
         """
         Save the given plot to the specified output folder.
@@ -58,26 +75,31 @@ class ProSpecPy:
             fig.savefig(full_path)
             if verbose:
                 print(f"Plot saved to {full_path}")
-            
+
+
+
+
+    # Section 2: subtract water vapor and range cut spectrum data
     def get_subtracted_spectra(self):
-        return self.cut_subtracted_data
+        return self.cut_subtracted_data #defined in cut_range_abstract(..)
     
     def get_atmfitparameters(self):
-        return self.cut_atmfitparameters
+        return self.cut_atmfitparameters #defined in cut_range_abstract(..)
     
     def get_atmfitparam_obj(self):
-        return self.cut_atmfitparams_obj
+        return self.cut_atmfitparams_obj #defined in cut_range_abstract(..)
     
     def get_subtracted_spectra_absorbance(self):
-        return self.get_atmfitparam_obj()[0].sub_spectrum
+        return self.get_atmfitparam_obj()[0].sub_spectrum #part of self.cut_atmfitparams_obj as retrived above
     
     def get_subtracted_spectra_wavenumber(self):
-        return self.get_atmfitparam_obj()[0].wavenb
+        return self.get_atmfitparam_obj()[0].wavenb #part of self.cut_atmfitparams_obj as retrived above
     
+    #for generating subtracted figure plotting
     def plot_subtracted_spectra(self, save = True, showplots = False):
         subtracted_fig = self.get_atmfitparam_obj()[0].plot(self.sample_name, self.batch_id, showplots =showplots)
         return subtracted_fig
-    
+    # main function 
     def cut_range_subtract(self, raw_wv, range_start: int = 3997, range_end: int = 499, SG_poly: int = 3, SG_points: int = 21, showplot = False, save = True, verbose=True):
         cut_sub_data = cut_range_subtraction_multiple_wv(self.get_raw_data(), raw_wv, range_start, range_end, SG_poly, SG_points)
         # Storing the results in the object's attributes
@@ -106,6 +128,12 @@ class ProSpecPy:
             if verbose:
                 print(f"Cut subtracted data saved to {os.path.join(self.output_folder, cut_subtracted_data_filename)}")
     
+
+
+
+
+
+    #Section 3: 2nd derivative calculation
     def second_derivative(self, showplots = False, save = True, verbose = True):
         self.second_deriv_tuple, cut_subtracted_data_fig, second_derivative_fig = second_deriv(self.get_atmfitparam_obj(), show_plots=showplots, sample_name=self.sample_name, batch_id=self.batch_id)
         self.second_deriv_dict['UniSpline_Object'] = self.second_deriv_tuple[0]
@@ -132,11 +160,16 @@ class ProSpecPy:
                 print(f"Second derivative csv data saved to {os.path.join(self.output_folder, csv_filename)}")
 
     def get_second_deriv_dict(self):
-        return self.second_deriv_dict
+        return self.second_deriv_dict # defined in second_derivative()
     
     def get_second_deriv_tuple(self):
-        return self.second_deriv_tuple
+        return self.second_deriv_tuple # defined in second_derivative() 
 
+
+
+
+
+    #Section 4: second derivative peak selection via threshold/peak heights
     def peak_finder(self, threshold):
         self.threshold = threshold
         self.peak_information, peak_wavenumber, peak_seconderiv_absorbance = get_peaks(self.get_second_deriv_tuple(), self.threshold)
@@ -151,10 +184,16 @@ class ProSpecPy:
     def get_peak_index(self):
         return self.second_deriv_peak_dict['peak_index']
     
+    #not yet finished method 9/3/24
     def save_second_deriv_peak_plot(self):
         #TO DO
         pass
         
+    
+
+
+
+    #Section 5: anchor point post processing
     def anchor_point_fit(self, adjustment_factor):
         wv_startIdx, wv_endIdx = get_start_end_anchorpoints(self.get_peak_index(), self.get_second_deriv_tuple())
         anchor_points, peak_wavenumber,peak_absorbance = get_all_anchor_points(wv_startIdx, wv_endIdx, self.second_deriv_peak_dict['peak_wavenumber'], self.get_subtracted_spectra_wavenumber(), self.get_subtracted_spectra_absorbance(), adjustment_factor)
@@ -168,12 +207,15 @@ class ProSpecPy:
     def get_anchor_points(self):
         return self.anchor_points
     
+    #anchor point spline fit curve generating via anchor_point_fit method above
     def baseline_fit(self):
         self.baseline_curve = baseline_spline(self.get_anchor_points())
     
     def get_baseline_curve(self):
         return self.baseline_curve
     
+
+    #main method for subtraction anchor point based baseline from raw data
     def subtract_baseline(self, save = True, showplot = True, verbose = True):
 
         if self.baseline_curve is not None:
@@ -218,6 +260,12 @@ class ProSpecPy:
             print("Please set and save the thresholds and adjustment factor for baseline spline!")
     
 
+
+
+    
+
+
+    #Section 6: Gaussian and Lorentzian fitting methods 
     def gaussian_fit_baseline(self, save = True, showplot =True, verbose = True):
         if self.baseline_corrected_abs is not None:
             try:
