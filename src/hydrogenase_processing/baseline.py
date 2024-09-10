@@ -106,7 +106,7 @@ def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data
     peak_idx_baseline =[]
     #not only for in range but choose the closest one
     while len(peak_wv_baseline) < len(raw_data_peak_wv):
-        range_val =range_val + 0.5
+        range_val =range_val + 0.5 #progressive range val to find all the desired peaks
         #print('range updated', range)
 
         for raw_wv in raw_data_peak_wv:
