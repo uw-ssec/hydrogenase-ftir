@@ -100,20 +100,33 @@ def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data
     #raw spectra data
 
     #adjust the range till the function result aligns with the raw_data_peak_wv
-    range = 1 #changed becuase we are using spline results
+    range_val = 1 #changed becuase we are using spline results
     
     peak_wv_baseline =[]
     peak_idx_baseline =[]
     #not only for in range but choose the closest one
     while len(peak_wv_baseline) < len(raw_data_peak_wv):
-        range =range + 0.5
+        range_val =range_val + 0.5
         #print('range updated', range)
 
         for raw_wv in raw_data_peak_wv:
             for wv in baseline_peak_wv:
-                if abs(wv[0] - raw_wv) <= range and wv[0] not in peak_wv_baseline:
+                if abs(wv[0] - raw_wv) <= range_val and wv[0] not in peak_wv_baseline:
                     peak_wv_baseline.append(wv[0])
                     peak_idx_baseline.append(wv[1])
+    
+    #cleaning the peak_wv_baseline list, such that the peaks with negligible abs are deleted
+    print(len(baseline_corrected_abs), baseline_corrected_abs[491])
+    i=0
+    while i < len(peak_wv_baseline):
+        #print('i',i, 'len of var', len(peak_idx_baseline))
+        idx = peak_idx_baseline[i]
+        if baseline_corrected_abs[idx] < max(baseline_corrected_abs)*0.01:
+            peak_idx_baseline.remove(peak_idx_baseline[i])
+            peak_wv_baseline.remove(peak_wv_baseline[i])
+            i=0
+            continue
+        i+=1
                 
     
     peak_baseline_abs = []
