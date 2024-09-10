@@ -219,7 +219,7 @@ class ProSpecPy: #class object running to organize script from the src directory
     def subtract_baseline(self, save = True, showplot = True, verbose = True):
 
         if self.baseline_curve is not None:
-            #use spline results for subtraction to avoid discreet subtraction results
+            #use spline results for subtraction to avoid discreet subtraction results, using spline results to subtract each other
             self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
             peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
             print('peak_wv', peak_wv)
