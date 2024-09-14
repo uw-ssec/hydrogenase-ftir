@@ -104,19 +104,22 @@ def get_baseline_peak_index(baseline_corrected_abs, rawdata_wavenumber, raw_data
     
     peak_wv_baseline =[]
     peak_idx_baseline =[]
-    #not only for in range but choose the closest one
+    #use the raw data peak wv as the standard of when to stop
     while len(peak_wv_baseline) < len(raw_data_peak_wv):
+        #print(f'baseline peak wv{peak_wv_baseline}, raw peak wv {raw_data_peak_wv}')
         range_val =range_val + 0.5 #progressive range val to find all the desired peaks
         #print('range updated', range)
-
+        if range_val > 1000:
+            break
         for raw_wv in raw_data_peak_wv:
             for wv in baseline_peak_wv:
                 if abs(wv[0] - raw_wv) <= range_val and wv[0] not in peak_wv_baseline:
                     peak_wv_baseline.append(wv[0])
                     peak_idx_baseline.append(wv[1])
+                
     
     #cleaning the peak_wv_baseline list, such that the peaks with negligible abs are deleted
-    print(len(baseline_corrected_abs), baseline_corrected_abs[491])
+    #print(len(baseline_corrected_abs), baseline_corrected_abs[491])
     i=0
     while i < len(peak_wv_baseline):
         #print('i',i, 'len of var', len(peak_idx_baseline))

@@ -222,9 +222,9 @@ class ProSpecPy: #class object running to organize script from the src directory
             #use spline results for subtraction to avoid discreet subtraction results, using spline results to subtract each other
             self.baseline_corrected_abs = baseline_correction(self.get_baseline_curve(), raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
             peak_wv, peak_abs = get_peaks_absorbance(self.second_deriv_peak_dict['peak_wavenumber'], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[1])
-            print('peak_wv', peak_wv)
+            #print('peak_wv', peak_wv)
             peak_wv_index, peak_wv_baseline, peak_baseline_abs = get_baseline_peak_index(self.baseline_corrected_abs, raw_spline(self.get_subtracted_spectra_wavenumber(),self.get_subtracted_spectra_absorbance())[0], peak_wv)#self.get_subtracted_spectra_wavenumber(), peak_wv) 
-            print('peak wv baseline', peak_wv_baseline)
+            #print('peak wv baseline', peak_wv_baseline)
             self.peak_width_half_height = get_peak_wid_at_half_height(self.baseline_corrected_abs,peak_wv_index) #need to verify if its giving the widths in order of peaks before saving TO DO!
             #print(self.peak_width_half_height)
             self.baseline_corrected_peak_dict['peak_index'] = peak_wv_index

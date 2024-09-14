@@ -24,10 +24,10 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #Preset threshold widget range and step by us
     threshold_widget = widgets.BoundedFloatText(
         value=threshold_guess,
-        min=0,
+        min=0.01,
         max=1,
         step=0.01,
-        description='Threshold for peak selection(0 to 1 in 0.01 steps):',
+        description='Threshold for peak selection(0.01 to 1 in 0.01 steps):',
         disabled=False,
         layout=widgets.Layout(width='70%'),
         style = style
@@ -36,10 +36,10 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #Preset adj widget range and step by us
     adj_widget = widgets.BoundedFloatText(
         value=adj_guess,
-        min=0,
+        min=0.01,
         max=5,
         step=0.01,
-        description='adj for anchor point selection(0 to 5 in 0.01 steps):',
+        description='adj for anchor point selection(0.01 to 5 in 0.01 steps):',
         disabled=False,
         layout=widgets.Layout(width='70%'),
         style=style
