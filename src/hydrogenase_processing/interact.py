@@ -1,9 +1,11 @@
 
 import ipywidgets as widgets
 import matplotlib.pyplot as plt
-from IPython.display import display
+from IPython.display import display, clear_output
 import csv # to export the anchor point coordinates
 import os
+import pandas as pd
+from tabulate import tabulate
 
 def interact(prospecpy_objects, threshold_guess, adj_guess):
     #First object in the interactive session is the file name selection
@@ -22,10 +24,10 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #Preset threshold widget range and step by us
     threshold_widget = widgets.BoundedFloatText(
         value=threshold_guess,
-        min=0,
+        min=0.01,
         max=1,
         step=0.01,
-        description='Threshold for peak selection(0 to 1 in 0.01 steps):',
+        description='Threshold for peak selection(0.01 to 1 in 0.01 steps):',
         disabled=False,
         layout=widgets.Layout(width='70%'),
         style = style
@@ -34,10 +36,10 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     #Preset adj widget range and step by us
     adj_widget = widgets.BoundedFloatText(
         value=adj_guess,
-        min=0,
+        min=0.01,
         max=5,
         step=0.01,
-        description='adj for anchor point selection(0 to 5 in 0.01 steps):',
+        description='adj for anchor point selection(0.01 to 5 in 0.01 steps):',
         disabled=False,
         layout=widgets.Layout(width='70%'),
         style=style
@@ -58,23 +60,15 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     description ='Save'
     )
 
-    #undo button is deleted after deciding for save bottom to overwrite previous values
-    #Undo = widgets.Button(
-    #description = 'Undo'
-    #)
-
+   
     
     #anchor_point_save = {} #potiential: if we want to output anchor points of different samples together
 
     #location of def botton_click is shifted down such that the anchor point values can be saved
     
-    #def do_over(b):
-    #    try:
-    #        del file_save[-1]
-    #        del threshold_save[-1]
-    #        del adj_save[-1]
-    #    except IndexError:
-    #        print("Cannot delete values. No saved values for threshold and adjustment factor found. Please submit values before Oops")
+    #output area creation to avoid flickering
+    output_Area = widgets.Output()
+
 
     current_output_address = prospecpy_obj.output_folder
     #print('current output path', current_output_address)
@@ -84,6 +78,10 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     
 
     def interact_with_functions(sample_name, threshold, adj):
+
+        #with output_Area:
+        #    clear_output(wait=False)
+
         #plotting subtracted spectra
         prospecpy_obj = sampleName_prospecpyObj_map[sample_name]
         prospecpy_obj.plot_subtracted_spectra(save = False, showplots = True)
@@ -130,7 +128,13 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
 
         print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
         
-        
+        file_save_check = f'{output_address}/{sample_name}/interact_input_parameters.csv'
+
+        if os.path.exists(file_save_check):
+            parameters = pd.read_csv(file_save_check)
+            parameters = parameters.iloc[:,1:]
+            print('\n' + f'{sample_name} saved parameters:')
+            print(tabulate(parameters, headers='keys', tablefmt='grid'))
         
         
         #location of button_click function shifted to save the anchor point coordinates
@@ -178,6 +182,13 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
                 writer2.writerow(headers2)
                 
                 writer2.writerows(input_param)
+
+            #prospecpy_obj.get_second_deriv_peak_dict()
+            #prospecpy_obj.get_second_deriv_dict()
+            prospecpy_obj.get_anchor_points_peak_dict()
+            prospecpy_obj.get_anchor_points()
+            
+
             
             
         Save.on_click(button_click)
@@ -198,7 +209,6 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
     display(threshold_adj_display)
     
     display(Save)
-    #display(Undo)
 
 
 
