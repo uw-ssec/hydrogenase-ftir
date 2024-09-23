@@ -81,6 +81,13 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
 
         #with output_Area:
         #    clear_output(wait=False)
+        file_save_check = f'{output_address}/{sample_name}/interact_input_parameters.csv'
+
+        if os.path.exists(file_save_check):
+            parameters = pd.read_csv(file_save_check)
+            parameters = parameters.iloc[:,1:]
+            threshold = float(parameters.iloc[0]['threshold'][1:-1])
+            adj = float(parameters.iloc[0]['adj_factor'][1:-1])
 
         #plotting subtracted spectra
         prospecpy_obj = sampleName_prospecpyObj_map[sample_name]
@@ -128,11 +135,7 @@ def interact(prospecpy_objects, threshold_guess, adj_guess):
 
         print('Step 2. Use the threshold and adj widgets to adjust the number of peaks included and the where to put the anchor points, and click submit after desired outcome to save the final parameters')
         
-        file_save_check = f'{output_address}/{sample_name}/interact_input_parameters.csv'
-
         if os.path.exists(file_save_check):
-            parameters = pd.read_csv(file_save_check)
-            parameters = parameters.iloc[:,1:]
             print('\n' + f'{sample_name} saved parameters:')
             print(tabulate(parameters, headers='keys', tablefmt='grid'))
         
